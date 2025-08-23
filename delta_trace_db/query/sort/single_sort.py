@@ -13,22 +13,22 @@ class SingleSort(AbstractSort):
     class_name = "SingleSort"
     version = "2"
 
-    def __init__(self, field: str, is_reversed: bool = False):
+    def __init__(self, field: str, reversed_: bool = False):
         self.field = field
-        self.is_reversed = is_reversed
+        self.reversed = reversed_
 
     @classmethod
     def from_dict(cls, src: Dict[str, Any]) -> "SingleSort":
         field = src["field"]
         is_reversed = src.get("reversed", False)
-        return cls(field=field, is_reversed=is_reversed)
+        return cls(field=field, reversed_=is_reversed)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "className": self.class_name,
             "version": self.version,
             "field": self.field,
-            "reversed": self.is_reversed,  # 外部的には"reversed"キーのまま
+            "reversed": self.reversed,  # 外部的には"reversed"キーのまま
         }
 
     def get_comparator(self) -> Callable[[Dict[str, Any], Dict[str, Any]], int]:
@@ -39,9 +39,9 @@ class SingleSort(AbstractSort):
             if a_value is None and b_value is None:
                 return 0
             if a_value is None:
-                return -1 if self.is_reversed else 1
+                return -1 if self.reversed else 1
             if b_value is None:
-                return 1 if self.is_reversed else -1
+                return 1 if self.reversed else -1
 
             if isinstance(a_value, bool) and isinstance(b_value, bool):
                 result = (a_value > b_value) - (a_value < b_value)
@@ -52,6 +52,6 @@ class SingleSort(AbstractSort):
                     f'Field "{self.field}" is not comparable: {a_value} ({type(a_value)}), {b_value} ({type(b_value)})'
                 )
 
-            return -result if self.is_reversed else result
+            return -result if self.reversed else result
 
         return comparator

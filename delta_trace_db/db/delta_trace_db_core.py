@@ -1,9 +1,14 @@
 # coding: utf-8
 from typing import Any, Dict, List, Set, Callable
 
-# --- ダミーインポート ---
-from dummy_modules import CloneableFile, Collection, Query, QueryResult, TransactionQuery, TransactionQueryResult, \
-    EnumQueryType
+from file_state_manager.cloneable_file import CloneableFile
+
+from delta_trace_db.query.enum_query_type import EnumQueryType
+from delta_trace_db.query.query import Query
+from delta_trace_db.query.query_result import QueryResult
+from delta_trace_db.query.transaction_query import TransactionQuery
+from delta_trace_db.query.transaction_query_result import TransactionQueryResult
+from delta_trace_db_collection import Collection
 
 
 class DeltaTraceDatabase(CloneableFile):
@@ -11,10 +16,11 @@ class DeltaTraceDatabase(CloneableFile):
     version = "6"
 
     def __init__(self):
+        super().__init__()
         self._collections: Dict[str, Collection] = {}
 
     @classmethod
-    def from_dict(cls, src: Dict[str, Any]):
+    def from_dict(cls, src: Dict[str, Any]) -> "DeltaTraceDatabase":
         instance = cls()
         instance._collections = cls._parse_collections(src)
         return instance
@@ -93,32 +99,32 @@ class DeltaTraceDatabase(CloneableFile):
     def execute_query(self, q: Query) -> QueryResult:
         col = self.collection(q.target)
         try:
-            r: QueryResult = None
-            if q.type == EnumQueryType.add:
-                r = col.add_all(q)
-            elif q.type == EnumQueryType.update:
-                r = col.update(q, is_single_target=False)
-            elif q.type == EnumQueryType.updateOne:
-                r = col.update(q, is_single_target=True)
-            elif q.type == EnumQueryType.delete:
-                r = col.delete(q)
-            elif q.type == EnumQueryType.deleteOne:
-                r = col.delete_one(q)
-            elif q.type == EnumQueryType.search:
-                r = col.search(q)
-            elif q.type == EnumQueryType.getAll:
-                r = col.get_all(q)
-            elif q.type == EnumQueryType.conformToTemplate:
-                r = col.conform_to_template(q)
-            elif q.type == EnumQueryType.renameField:
-                r = col.rename_field(q)
-            elif q.type == EnumQueryType.count:
-                r = col.count(q)
-            elif q.type == EnumQueryType.clear:
-                r = col.clear(q)
-            elif q.type == EnumQueryType.clearAdd:
-                r = col.clear_add(q)
-
+            match q.type:
+                case EnumQueryType.add:
+                    r = col.add_all(q)
+                case EnumQueryType.update:
+                    r = col.update(q, is_single_target=False)
+                case EnumQueryType.updateOne:
+                    r = col.update(q, is_single_target=True)
+                case EnumQueryType.delete:
+                    r = col.delete(q)
+                case EnumQueryType.deleteOne:
+                    r = col.delete_one(q)
+                case EnumQueryType.search:
+                    r = col.search(q)
+                case EnumQueryType.getAll:
+                    r = col.get_all(q)
+                case EnumQueryType.conformToTemplate:
+                    r = col.conform_to_template(q)
+                case EnumQueryType.renameField:
+                    r = col.rename_field(q)
+                case EnumQueryType.count:
+                    r = col.count(q)
+                case EnumQueryType.clear:
+                    r = col.clear(q)
+                case EnumQueryType.clearAdd:
+                    r = col.clear_add(q)
+            # must_affect_at_least_oneの判定。
             if q.type in (
                     EnumQueryType.add,
                     EnumQueryType.update,

@@ -1,5 +1,6 @@
 # coding: utf-8
 from datetime import datetime
+from typing import Any
 import re
 from delta_trace_db.query.nodes.enum_node_type import EnumNodeType
 from delta_trace_db.query.nodes.enum_value_type import EnumValueType
@@ -8,12 +9,13 @@ from delta_trace_db.query.util_field import UtilField
 
 
 class FieldEquals(QueryNode):
-    def __init__(self, field: str, value, v_type: EnumValueType = EnumValueType.auto_):
+    def __init__(self, field: str, value: Any, v_type: EnumValueType = EnumValueType.auto_):
         self.field = field
         self.value = value
-        self.v_type = v_type
         if isinstance(value, datetime):
             self.v_type = EnumValueType.datetime_
+        else:
+            self.v_type = v_type
 
     @classmethod
     def from_dict(cls, src: dict):
@@ -24,21 +26,22 @@ class FieldEquals(QueryNode):
     def evaluate(self, data: dict) -> bool:
         f_value = UtilField.get_nested_field_value(data, self.field)
         try:
-            if self.v_type == EnumValueType.auto_:
-                return f_value == self.value
-            if self.v_type == EnumValueType.datetime_:
-                return datetime.fromisoformat(str(f_value)) == self.value
-            if self.v_type == EnumValueType.int_:
-                return int(str(f_value)) == int(self.value)
-            if self.v_type == EnumValueType.floatStrict_:
-                return float(str(f_value)) == float(self.value)
-            if self.v_type == EnumValueType.floatEpsilon12_:
-                return abs(float(str(f_value)) - float(self.value)) < 1e-12
-            if self.v_type == EnumValueType.boolean_:
-                return str(f_value).lower() == str(self.value).lower()
-            if self.v_type == EnumValueType.string_:
-                return str(f_value) == str(self.value)
-            return False
+            match self.v_type:
+                case EnumValueType.auto_:
+                    return f_value == self.value
+                case EnumValueType.datetime_:
+                    return datetime.fromisoformat(str(f_value)) == self.value
+                case EnumValueType.int_:
+                    return int(str(f_value)) == int(self.value)
+                case EnumValueType.floatStrict_:
+                    return float(str(f_value)) == float(self.value)
+                case EnumValueType.floatEpsilon12_:
+                    return abs(float(str(f_value)) - float(self.value)) < 1e-12
+                case EnumValueType.boolean_:
+                    return str(f_value).lower() == str(self.value).lower()
+                case EnumValueType.string_:
+                    return str(f_value) == str(self.value)
+            return False  # 予期しない v_type に対する安全策
         except Exception:
             return False
 

@@ -6,13 +6,13 @@ class UtilField:
     """
 
     @staticmethod
-    def get_nested_field_value(map_: dict, path: str) -> object | None:
+    def get_nested_field_value(map_: Dict[str, Any], path: str) -> object | None:
         """
         (en) Access nested fields of a dictionary.
         (ja) 辞書の、ネストされたフィールドにアクセスするための関数です。
 
         Args:
-            map_ (dict): 探索したいマップ。
+            map_ (Dict[str, Any]): 探索したいマップ。
             path (str): "."区切りの探索用パス。例: "user.name"
 
         Returns:
@@ -21,7 +21,7 @@ class UtilField:
         keys = path.split('.')
         current: object | None = map_
         for key in keys:
-            if isinstance(current, dict) and key in current:
+            if isinstance(current, Dict[str, Any]) and key in current:
                 current = current[key]
             else:
                 return None

@@ -1,5 +1,5 @@
 # coding: utf-8
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 
 from .cause.cause import Cause
 from .enum_query_type import EnumQueryType
@@ -9,22 +9,18 @@ from delta_trace_db.query.nodes.query_node import QueryNode
 from .sort.abstract_sort import AbstractSort
 
 
-# CloneableFile, QueryNode, AbstractSort, Cause は外部クラスなので
-# ここでは型アノテーションだけ残しています。
-# 必要に応じてインポートしてください。
-
 class QueryBuilder:
     def __init__(self,
                  target: str,
                  query_type: EnumQueryType,
                  add_data: Optional[List[CloneableFile]] = None,
-                 override_data: Optional[Dict[str, any]] = None,
-                 template: Optional[Dict[str, any]] = None,
+                 override_data: Optional[Dict[str, Any]] = None,
+                 template: Optional[Dict[str, Any]] = None,
                  query_node: Optional[QueryNode] = None,
                  sort_obj: Optional[AbstractSort] = None,
                  offset: Optional[int] = None,
-                 start_after: Optional[Dict[str, any]] = None,
-                 end_before: Optional[Dict[str, any]] = None,
+                 start_after: Optional[Dict[str, Any]] = None,
+                 end_before: Optional[Dict[str, Any]] = None,
                  rename_before: Optional[str] = None,
                  rename_after: Optional[str] = None,
                  limit: Optional[int] = None,
@@ -48,9 +44,6 @@ class QueryBuilder:
         self.must_affect_at_least_one = must_affect_at_least_one
         self.cause = cause
 
-    # --------------------------
-    # Factory methods (Dartの名前付きコンストラクタに対応)
-    # --------------------------
     @classmethod
     def add(cls, target: str,
             add_data: List[CloneableFile],
@@ -63,12 +56,12 @@ class QueryBuilder:
 
     @classmethod
     def update(cls, target: str,
-               query_node: "QueryNode",
-               override_data: Dict[str, any],
+               query_node: QueryNode,
+               override_data: Dict[str, Any],
                return_data: bool,
-               sort_obj: Optional["AbstractSort"] = None,
+               sort_obj: Optional[AbstractSort] = None,
                must_affect_at_least_one: bool = True,
-               cause: Optional["Cause"] = None):
+               cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.update,
                    query_node=query_node,
                    override_data=override_data,
@@ -80,10 +73,10 @@ class QueryBuilder:
     @classmethod
     def update_one(cls, target: str,
                    query_node: QueryNode,
-                   override_data: Dict[str, any],
+                   override_data: Dict[str, Any],
                    return_data: bool,
                    must_affect_at_least_one: bool = True,
-                   cause: Optional["Cause"] = None):
+                   cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.updateOne,
                    query_node=query_node,
                    override_data=override_data,
@@ -95,9 +88,9 @@ class QueryBuilder:
     def delete(cls, target: str,
                query_node: QueryNode,
                return_data: bool,
-               sort_obj: Optional["AbstractSort"] = None,
+               sort_obj: Optional[AbstractSort] = None,
                must_affect_at_least_one: bool = True,
-               cause: Optional["Cause"] = None):
+               cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.delete,
                    query_node=query_node,
                    return_data=return_data,
@@ -110,7 +103,7 @@ class QueryBuilder:
                    query_node: QueryNode,
                    return_data: bool,
                    must_affect_at_least_one: bool = True,
-                   cause: Optional["Cause"] = None):
+                   cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.deleteOne,
                    query_node=query_node,
                    return_data=return_data,
@@ -120,12 +113,12 @@ class QueryBuilder:
     @classmethod
     def search(cls, target: str,
                query_node: QueryNode,
-               sort_obj: Optional["AbstractSort"] = None,
+               sort_obj: Optional[AbstractSort] = None,
                offset: Optional[int] = None,
-               start_after: Optional[Dict[str, any]] = None,
-               end_before: Optional[Dict[str, any]] = None,
+               start_after: Optional[Dict[str, Any]] = None,
+               end_before: Optional[Dict[str, Any]] = None,
                limit: Optional[int] = None,
-               cause: Optional["Cause"] = None):
+               cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.search,
                    query_node=query_node,
                    sort_obj=sort_obj,
@@ -137,17 +130,17 @@ class QueryBuilder:
 
     @classmethod
     def get_all(cls, target: str,
-                sort_obj: Optional["AbstractSort"] = None,
-                cause: Optional["Cause"] = None):
+                sort_obj: Optional[AbstractSort] = None,
+                cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.getAll,
                    sort_obj=sort_obj,
                    cause=cause)
 
     @classmethod
     def conform_to_template(cls, target: str,
-                            template: CloneableFile,
+                            template: Dict[str, Any],
                             must_affect_at_least_one: bool = True,
-                            cause: Optional["Cause"] = None):
+                            cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.conformToTemplate,
                    template=template,
                    must_affect_at_least_one=must_affect_at_least_one,
@@ -195,7 +188,7 @@ class QueryBuilder:
     # build() : Query インスタンスを返す
     # --------------------------
     def build(self) -> Query:
-        m_data: Optional[List[Dict[str, any]]] = None
+        m_data: Optional[List[Dict[str, Any]]] = None
         if self.add_data is not None:
             m_data = [i.to_dict() for i in self.add_data]
 
@@ -204,7 +197,7 @@ class QueryBuilder:
             query_type=self.query_type,
             add_data=m_data,
             override_data=self.override_data,
-            template=self.template.to_dict() if self.template else None,
+            template=self.template,
             query_node=self.query_node,
             sort_obj=self.sort_obj,
             offset=self.offset,

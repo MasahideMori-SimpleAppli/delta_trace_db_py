@@ -1,13 +1,15 @@
 # coding: utf-8
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
+from file_state_manager.cloneable_file import CloneableFile
 from delta_trace_db.query.cause.temporal_trace.timestamp_node import TimestampNode
 
-class TemporalTrace:
+class TemporalTrace(CloneableFile):
     """イベントの「時間の軌跡」を記録するクラス。"""
     class_name = "TemporalTrace"
     version = "1"
 
     def __init__(self, nodes: Optional[List[TimestampNode]] = None):
+        super().__init__()
         self.nodes: List[TimestampNode] = nodes if nodes is not None else []
 
     @property
@@ -21,15 +23,15 @@ class TemporalTrace:
         return self.nodes[-1].timestamp if self.nodes else None
 
     @classmethod
-    def from_dict(cls, src: dict):
+    def from_dict(cls, src: Dict[str, Any]) -> "TemporalTrace":
         nodes_list = src.get("nodes", [])
         nodes = [TimestampNode.from_dict(n) for n in nodes_list]
         return cls(nodes=nodes)
 
-    def clone(self):
+    def clone(self) -> "TemporalTrace":
         return TemporalTrace.from_dict(self.to_dict())
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "className": self.class_name,
             "version": self.version,

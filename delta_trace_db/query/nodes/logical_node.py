@@ -7,15 +7,15 @@ class AndNode(QueryNode):
         self.conditions = conditions
 
     @classmethod
-    def from_dict(cls, src: dict):
+    def from_dict(cls, src: Dict[str, Any]):
         return cls([
             QueryNode.from_dict(dict(e)) for e in src['conditions']
         ])
 
-    def evaluate(self, data: dict) -> bool:
+    def evaluate(self, data: Dict[str, Any]) -> bool:
         return all(c.evaluate(data) for c in self.conditions)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict[str, Any]:
         return {
             'type': EnumNodeType.and_.name,
             'conditions': [c.to_dict() for c in self.conditions],

@@ -1,10 +1,12 @@
 # coding: utf-8
-from typing import Generic, TypeVar, List, Dict, Any, Optional
-from dummy_modules import QueryExecutionResult, QueryResult, UtilCopy
+from typing import List, Dict, Any, Optional
 
-T = TypeVar("T")
+from delta_trace_db.db.util_copy import UtilCopy
+from delta_trace_db.query.query_execution_result import QueryExecutionResult
+from delta_trace_db.query.query_result import QueryResult
 
-class TransactionQueryResult(QueryExecutionResult, Generic[T]):
+
+class TransactionQueryResult(QueryExecutionResult):
     """
     (en) The result class for a transactional query.
     (ja) トランザクションクエリの結果クラスです。
@@ -23,7 +25,7 @@ class TransactionQueryResult(QueryExecutionResult, Generic[T]):
         self.error_message = error_message
 
     @classmethod
-    def from_dict(cls, src: Dict[str, Any]) -> "TransactionQueryResult[T]":
+    def from_dict(cls, src: Dict[str, Any]) -> "TransactionQueryResult":
         qr = [QueryResult.from_dict(i) for i in src["results"]]
         return cls(
             is_success=src["isSuccess"],
@@ -37,9 +39,9 @@ class TransactionQueryResult(QueryExecutionResult, Generic[T]):
             "className": self.className,
             "version": self.version,
             "isSuccess": self.is_success,
-            "results": UtilCopy.jsonableDeepCopy(qr),
+            "results": UtilCopy.jsonable_deep_copy(qr),
             "errorMessage": self.error_message,
         }
 
-    def clone(self) -> "TransactionQueryResult[T]":
+    def clone(self) -> "TransactionQueryResult":
         return TransactionQueryResult.from_dict(self.to_dict())

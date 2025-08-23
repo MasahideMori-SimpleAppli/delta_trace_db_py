@@ -1,21 +1,17 @@
 # coding: utf-8
+from file_state_manager.cloneable_file import CloneableFile
 from delta_trace_db.db.util_copy import UtilCopy
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 from delta_trace_db.query.cause.enum_actor_type import EnumActorType
 
 
-class Actor:
+class Actor(CloneableFile):
     class_name = "Actor"
     version = "1"
 
-    def __init__(
-            self,
-            type_: EnumActorType,
-            id_: str,
-            roles: List[str],
-            permissions: List[str],
-            context: Optional[Dict[str, any]] = None
-    ):
+    def __init__(self, type_: EnumActorType, id_: str, roles: List[str], permissions: List[str],
+                 context: Optional[Dict[str, Any]] = None):
+        super().__init__()
         self.type = type_
         self.id = id_
         self.roles = roles
@@ -23,7 +19,7 @@ class Actor:
         self.context = context
 
     @classmethod
-    def from_dict(cls, src: Dict[str, any]) -> 'Actor':
+    def from_dict(cls, src: Dict[str, Any]) -> 'Actor':
         type_ = EnumActorType[src["type"]]
         id_ = src["id"]
         roles = list(src["roles"])
@@ -34,7 +30,7 @@ class Actor:
     def clone(self) -> 'Actor':
         return Actor.from_dict(self.to_dict())
 
-    def to_dict(self) -> Dict[str, any]:
+    def to_dict(self) -> Dict[str, Any]:
         return {
             "className": self.class_name,
             "version": self.version,

@@ -1,12 +1,11 @@
 # coding: utf-8
+import functools
 from typing import Any, Callable, Dict, List, Set
-from copy import deepcopy
-
 from file_state_manager.cloneable_file import CloneableFile
 from delta_trace_db.db.util_copy import UtilCopy
-
-# --- ダミーインポート ---
-from dummy_modules import Query, QueryResult, QueryNode
+from delta_trace_db.query.nodes.query_node import QueryNode
+from delta_trace_db.query.query import Query
+from delta_trace_db.query.query_result import QueryResult
 
 
 class Collection(CloneableFile):
@@ -25,19 +24,19 @@ class Collection(CloneableFile):
         self.run_notify_listeners_in_transaction = False
 
     @classmethod
-    def from_dict(cls, src: Dict[str, Any]):
+    def from_dict(cls, src: Dict[str, Any]) -> "Collection":
         instance = cls()
-        instance._data = deepcopy(src.get("data", []))
+        instance._data = UtilCopy.jsonable_deep_copy(src.get("data", []))
         return instance
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "className": self.class_name,
             "version": self.version,
-            "data": deepcopy(self._data)
+            "data": UtilCopy.jsonable_deep_copy(self._data)
         }
 
-    def clone(self):
+    def clone(self) -> "Collection":
         return Collection.from_dict(self.to_dict())
 
     @property
@@ -65,7 +64,7 @@ class Collection(CloneableFile):
         return node.evaluate(record)
 
     def add_all(self, q: Query) -> QueryResult:
-        add_data = deepcopy(q.add_data)
+        add_data = UtilCopy.jsonable_deep_copy(q.add_data)
         self._data.extend(add_data)
         self.notify_listeners()
         return QueryResult(True, q.type, [], len(self._data), len(add_data), 0)
@@ -75,18 +74,18 @@ class Collection(CloneableFile):
             r = []
             for item in self._data:
                 if self._evaluate(item, q.query_node):
-                    item.update(deepcopy(q.override_data))
+                    item.update(UtilCopy.jsonable_deep_copy(q.override_data))
                     r.append(item)
                     if is_single_target:
                         break
             if r:
                 self.notify_listeners()
-            return QueryResult(True, q.type, deepcopy(r), len(self._data), len(r), len(r))
+            return QueryResult(True, q.type, UtilCopy.jsonable_deep_copy(r), len(self._data), len(r), len(r))
         else:
             count = 0
             for item in self._data:
                 if self._evaluate(item, q.query_node):
-                    item.update(deepcopy(q.override_data))
+                    item.update(UtilCopy.jsonable_deep_copy(q.override_data))
                     count += 1
                     if is_single_target:
                         break
@@ -100,7 +99,8 @@ class Collection(CloneableFile):
             self._data = [item for item in self._data if not self._evaluate(item, q.query_node)]
             if deleted_items:
                 self.notify_listeners()
-            return QueryResult(True, q.type, deepcopy(deleted_items), len(self._data), len(deleted_items),
+            return QueryResult(True, q.type, UtilCopy.jsonable_deep_copy(deleted_items), len(self._data),
+                               len(deleted_items),
                                len(deleted_items))
         else:
             count = sum(1 for item in self._data if self._evaluate(item, q.query_node))
@@ -118,22 +118,23 @@ class Collection(CloneableFile):
                 break
         if deleted_items:
             self.notify_listeners()
-        return QueryResult(True, q.type, deepcopy(deleted_items), len(self._data), len(deleted_items),
+        return QueryResult(True, q.type, UtilCopy.jsonable_deep_copy(deleted_items), len(self._data),
+                           len(deleted_items),
                            len(deleted_items))
 
     def search(self, q: Query) -> QueryResult:
         r = [item for item in self._data if self._evaluate(item, q.query_node)]
         hit_count = len(r)
         if q.sort_obj:
-            r.sort(key=q.sort_obj.get_comparator())
+            r.sort(key=functools.cmp_to_key(q.sort_obj.get_comparator()))
         if q.offset:
             r = r[q.offset:]
         if q.limit:
             r = r[:q.limit]
-        return QueryResult(True, q.type, deepcopy(r), len(self._data), 0, hit_count)
+        return QueryResult(True, q.type, UtilCopy.jsonable_deep_copy(r), len(self._data), 0, hit_count)
 
     def get_all(self, q: Query) -> QueryResult:
-        r = deepcopy(self._data)
+        r = UtilCopy.jsonable_deep_copy(self._data)
         if q.sort_obj:
             r.sort(key=q.sort_obj.get_comparator())
         return QueryResult(True, q.type, r, len(self._data), 0, len(r))
@@ -147,7 +148,7 @@ class Collection(CloneableFile):
     def clear_add(self, q: Query) -> QueryResult:
         pre_len = len(self._data)
         self._data.clear()
-        self._data.extend(deepcopy(q.add_data))
+        self._data.extend(UtilCopy.jsonable_deep_copy(q.add_data))
         self.notify_listeners()
         return QueryResult(True, q.type, [], len(self._data), pre_len, pre_len)
 
@@ -158,7 +159,7 @@ class Collection(CloneableFile):
                 item.pop(k)
             for k, v in q.template.items():
                 if k not in item:
-                    item[k] = deepcopy(v)
+                    item[k] = UtilCopy.jsonable_deep_copy(v)
         self.notify_listeners()
         return QueryResult(True, q.type, [], len(self._data), len(self._data), len(self._data))
 
@@ -179,7 +180,7 @@ class Collection(CloneableFile):
             if q.return_data:
                 r.append(item)
         self.notify_listeners()
-        return QueryResult(True, q.type, deepcopy(r), len(self._data), update_count, update_count)
+        return QueryResult(True, q.type, UtilCopy.jsonable_deep_copy(r), len(self._data), update_count, update_count)
 
     def count(self, q: Query) -> QueryResult:
         return QueryResult(True, q.type, [], len(self._data), 0, len(self._data))

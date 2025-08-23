@@ -1,6 +1,10 @@
 # coding: utf-8
 from typing import List, Dict, Any
-from dummy_modules import CloneableFile, Query
+
+from file_state_manager.cloneable_file import CloneableFile
+
+from delta_trace_db.query.query import Query
+
 
 class TransactionQuery(CloneableFile):
     """
@@ -18,6 +22,7 @@ class TransactionQuery(CloneableFile):
         """
         :param queries: The transaction targets.
         """
+        super().__init__()
         self.queries = queries
 
     @classmethod
