@@ -1,6 +1,4 @@
-# delta_trace_db_test.py (Part 1)
 import json
-import unittest
 from datetime import datetime, timedelta
 
 from delta_trace_db.db.delta_trace_db_core import DeltaTraceDatabase
@@ -388,6 +386,3 @@ def test_query_serialize():
 
     assert isinstance(Query.from_dict(q1.to_dict()).sort_obj, SingleSort)
     assert isinstance(Query.from_dict(q2.to_dict()).sort_obj, MultiSort)
-
-if __name__ == '__main__':
-    unittest.main()

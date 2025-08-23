@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import unittest
 from file_state_manager.cloneable_file import CloneableFile
 
 from delta_trace_db.db.delta_trace_db_core import DeltaTraceDatabase
@@ -96,7 +95,3 @@ def test_transaction_query():
     result2 = db.execute_query_object(tq2)
     assert result2.is_success
     assert db.collection("users2").length == 0
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -4,11 +4,10 @@ from typing import Any
 import re
 from delta_trace_db.query.nodes.enum_node_type import EnumNodeType
 from delta_trace_db.query.nodes.enum_value_type import EnumValueType
-from delta_trace_db.query.nodes.query_node import QueryNode
 from delta_trace_db.query.util_field import UtilField
 
 
-class FieldEquals(QueryNode):
+class FieldEquals:
     def __init__(self, field: str, value: Any, v_type: EnumValueType = EnumValueType.auto_):
         self.field = field
         self.value = value
@@ -41,7 +40,6 @@ class FieldEquals(QueryNode):
                     return str(f_value).lower() == str(self.value).lower()
                 case EnumValueType.string_:
                     return str(f_value) == str(self.value)
-            return False  # 予期しない v_type に対する安全策
         except Exception:
             return False
 
@@ -56,13 +54,14 @@ class FieldEquals(QueryNode):
         }
 
 
-class FieldNotEquals(QueryNode):
+class FieldNotEquals:
     def __init__(self, field: str, value, v_type: EnumValueType = EnumValueType.auto_):
         self.field = field
         self.value = value
-        self.v_type = v_type
         if isinstance(value, datetime):
             self.v_type = EnumValueType.datetime_
+        else:
+            self.v_type = v_type
 
     @classmethod
     def from_dict(cls, src: dict):
@@ -102,13 +101,14 @@ class FieldNotEquals(QueryNode):
         }
 
 
-class FieldGreaterThan(QueryNode):
+class FieldGreaterThan:
     def __init__(self, field: str, value, v_type: EnumValueType = EnumValueType.auto_):
         self.field = field
         self.value = value
-        self.v_type = v_type
         if isinstance(value, datetime):
             self.v_type = EnumValueType.datetime_
+        else:
+            self.v_type = v_type
 
     @classmethod
     def from_dict(cls, src: dict):
@@ -150,13 +150,14 @@ class FieldGreaterThan(QueryNode):
         }
 
 
-class FieldLessThan(QueryNode):
+class FieldLessThan:
     def __init__(self, field: str, value, v_type: EnumValueType = EnumValueType.auto_):
         self.field = field
         self.value = value
-        self.v_type = v_type
         if isinstance(value, datetime):
             self.v_type = EnumValueType.datetime_
+        else:
+            self.v_type = v_type
 
     @classmethod
     def from_dict(cls, src: dict):
@@ -198,13 +199,14 @@ class FieldLessThan(QueryNode):
         }
 
 
-class FieldGreaterThanOrEqual(QueryNode):
+class FieldGreaterThanOrEqual:
     def __init__(self, field: str, value, v_type: EnumValueType = EnumValueType.auto_):
         self.field = field
         self.value = value
-        self.v_type = v_type
         if isinstance(value, datetime):
             self.v_type = EnumValueType.datetime_
+        else:
+            self.v_type = v_type
 
     @classmethod
     def from_dict(cls, src: dict):
@@ -246,13 +248,14 @@ class FieldGreaterThanOrEqual(QueryNode):
         }
 
 
-class FieldLessThanOrEqual(QueryNode):
+class FieldLessThanOrEqual:
     def __init__(self, field: str, value, v_type: EnumValueType = EnumValueType.auto_):
         self.field = field
         self.value = value
-        self.v_type = v_type
         if isinstance(value, datetime):
             self.v_type = EnumValueType.datetime_
+        else:
+            self.v_type = v_type
 
     @classmethod
     def from_dict(cls, src: dict):
@@ -294,7 +297,7 @@ class FieldLessThanOrEqual(QueryNode):
         }
 
 
-class FieldMatchesRegex(QueryNode):
+class FieldMatchesRegex:
     def __init__(self, field: str, pattern: str):
         self.field = field
         self.pattern = pattern
@@ -318,7 +321,7 @@ class FieldMatchesRegex(QueryNode):
         }
 
 
-class FieldContains(QueryNode):
+class FieldContains:
     def __init__(self, field: str, value):
         self.field = field
         self.value = value
@@ -344,7 +347,7 @@ class FieldContains(QueryNode):
         }
 
 
-class FieldIn(QueryNode):
+class FieldIn:
     def __init__(self, field: str, values: list):
         self.field = field
         self.values = values
@@ -365,7 +368,7 @@ class FieldIn(QueryNode):
         }
 
 
-class FieldNotIn(QueryNode):
+class FieldNotIn:
     def __init__(self, field: str, values):
         self.field = field
         self.values = list(values)
@@ -386,7 +389,7 @@ class FieldNotIn(QueryNode):
         }
 
 
-class FieldStartsWith(QueryNode):
+class FieldStartsWith:
     def __init__(self, field: str, value: str):
         self.field = field
         self.value = value
@@ -408,7 +411,7 @@ class FieldStartsWith(QueryNode):
         }
 
 
-class FieldEndsWith(QueryNode):
+class FieldEndsWith:
     def __init__(self, field: str, value: str):
         self.field = field
         self.value = value
