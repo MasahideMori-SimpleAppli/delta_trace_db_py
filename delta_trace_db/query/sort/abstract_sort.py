@@ -1,8 +1,6 @@
 # coding: utf-8
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict
-from delta_trace_db.query.sort.multi_sort import MultiSort
-from delta_trace_db.query.sort.single_sort import SingleSort
 
 
 class AbstractSort(ABC):
@@ -25,6 +23,9 @@ class AbstractSort(ABC):
     @classmethod
     def from_dict(cls, src: Dict[str, Any]) -> "AbstractSort":
         """Restore a sort object from a dictionary."""
+        # 遅延インポート
+        from delta_trace_db.query.sort.single_sort import SingleSort
+        from delta_trace_db.query.sort.multi_sort import MultiSort
         class_name = src.get("className")
         if class_name == SingleSort.class_name:
             return SingleSort.from_dict(src)

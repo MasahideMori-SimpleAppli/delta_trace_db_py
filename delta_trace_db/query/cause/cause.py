@@ -2,7 +2,7 @@
 from typing import Optional, Dict, Any
 from file_state_manager.cloneable_file import CloneableFile
 from delta_trace_db.db.util_copy import UtilCopy
-from actor import Actor
+from delta_trace_db.query.cause.actor import Actor
 from delta_trace_db.query.cause.temporal_trace.temporal_trace import TemporalTrace
 
 

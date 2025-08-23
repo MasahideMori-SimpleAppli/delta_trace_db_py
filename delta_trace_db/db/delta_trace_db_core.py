@@ -3,12 +3,14 @@ from typing import Any, Dict, List, Set, Callable
 
 from file_state_manager.cloneable_file import CloneableFile
 
+from delta_trace_db.db.delta_trace_db_collection import Collection
 from delta_trace_db.query.enum_query_type import EnumQueryType
 from delta_trace_db.query.query import Query
+from delta_trace_db.query.query_execution_result import QueryExecutionResult
 from delta_trace_db.query.query_result import QueryResult
 from delta_trace_db.query.transaction_query import TransactionQuery
 from delta_trace_db.query.transaction_query_result import TransactionQueryResult
-from delta_trace_db_collection import Collection
+
 
 
 class DeltaTraceDatabase(CloneableFile):
@@ -81,7 +83,7 @@ class DeltaTraceDatabase(CloneableFile):
     def remove_listener(self, target: str, cb: Callable[[], None]):
         self.collection(target).remove_listener(cb)
 
-    def execute_query_object(self, query: Any) -> Any:
+    def execute_query_object(self, query: Any) -> QueryExecutionResult:
         if isinstance(query, Query):
             return self.execute_query(query)
         elif isinstance(query, TransactionQuery):
@@ -139,7 +141,7 @@ class DeltaTraceDatabase(CloneableFile):
                 if q.must_affect_at_least_one and r.update_count == 0:
                     return QueryResult(
                         is_success=False,
-                        type=q.type,
+                        type_=q.type,
                         result=[],
                         db_length=len(col.raw),
                         update_count=0,
@@ -151,7 +153,7 @@ class DeltaTraceDatabase(CloneableFile):
             print(f"{self.class_name},execute_query: {e}")
             return QueryResult(
                 is_success=False,
-                type=q.type,
+                type_=q.type,
                 result=[],
                 db_length=len(col.raw),
                 update_count=-1,

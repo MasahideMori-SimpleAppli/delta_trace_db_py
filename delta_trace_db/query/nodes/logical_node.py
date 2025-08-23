@@ -2,10 +2,11 @@
 # logical_node.py
 from typing import Any, Dict
 from delta_trace_db.query.nodes.enum_node_type import EnumNodeType
+from delta_trace_db.query.nodes.query_node import QueryNode
 
 
-class AndNode:
-    def __init__(self, conditions: list):
+class AndNode(QueryNode):
+    def __init__(self, conditions: list[QueryNode]):
         self.conditions = conditions
 
     @classmethod
@@ -24,8 +25,8 @@ class AndNode:
         }
 
 
-class OrNode:
-    def __init__(self, conditions: list):
+class OrNode(QueryNode):
+    def __init__(self, conditions: list[QueryNode]):
         self.conditions = conditions
 
     @classmethod
@@ -44,7 +45,7 @@ class OrNode:
         }
 
 
-class NotNode:
+class NotNode(QueryNode):
     def __init__(self, condition):
         self.condition = condition
 

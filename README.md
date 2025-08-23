@@ -1,8 +1,66 @@
 # delta_trace_db_py
-* This package is currently under construction.  
+
+* This package is currently under construction.
 
 Python implementation of DeltaTraceDB.
 
+## Usage
+
+Please refer to the [Dart version](https://github.com/MasahideMori-SimpleAppli/delta_trace_db).  
+There are some differences,   
+such as arguments being snake case by default and an underscore being added after the variable name   
+if there is a namespace conflict with a standard function, but the usage is the same.
+
+## Speed
+
+This package is an in-memory database, so it is generally fast.  
+Currently, there is no mechanism to speed it up, but it works almost the same as a for loop in a program,  
+so there is usually no problem with around 100,000 records.  
+I recommend that you test it in an actual environment using speed_test.dart in the test folder.  
+However, since it consumes RAM capacity according to the amount of data,  
+if you need an extremely large database, consider using a general database.  
+For reference, below are the results of a speed test (test/speed_test.dart) run on a slightly  
+older PC equipped with a Ryzen 3600 CPU.  
+The test conditions were chosen to take a sufficiently long time, but I think it will rarely
+cause   
+any problems in practical use.
+Please note that speeds also depend on the amount of data, so if you have a lot of large data, it will be slower.
+
+```text
+tests/test_speed.py speed test for 100000 records
+start add
+end add: 339 ms
+start getAll (with object convert)
+end getAll: 659 ms
+returnsLength: 100000
+start save (with json string convert)
+end save: 467 ms
+start load (with json string convert)
+end load: 557 ms
+start search (with object convert)
+end search: 818 ms
+returnsLength: 100000
+start search paging, half limit pre search (with object convert)
+end search paging: 379 ms
+returnsLength: 50000
+start update at half index and last index object
+end update: 96 ms
+start updateOne of half index object
+end updateOne: 31 ms
+start conformToTemplate
+end conformToTemplate: 79 ms
+start delete half object (with object convert)
+end delete: 562 ms
+returnsLength: 50000
+start deleteOne for last object (with object convert)
+end deleteOne: 22 ms
+returnsLength: 1
+```
+
+## Future plans
+
+It is possible to speed up the database, but this is a low priority, so I think that improving
+usability and creating peripheral tools will take priority.
 
 ## Support
 

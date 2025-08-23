@@ -4,10 +4,11 @@ from typing import Any
 import re
 from delta_trace_db.query.nodes.enum_node_type import EnumNodeType
 from delta_trace_db.query.nodes.enum_value_type import EnumValueType
+from delta_trace_db.query.nodes.query_node import QueryNode
 from delta_trace_db.query.util_field import UtilField
 
 
-class FieldEquals:
+class FieldEquals(QueryNode):
     def __init__(self, field: str, value: Any, v_type: EnumValueType = EnumValueType.auto_):
         self.field = field
         self.value = value
@@ -54,7 +55,7 @@ class FieldEquals:
         }
 
 
-class FieldNotEquals:
+class FieldNotEquals(QueryNode):
     def __init__(self, field: str, value, v_type: EnumValueType = EnumValueType.auto_):
         self.field = field
         self.value = value
@@ -72,21 +73,21 @@ class FieldNotEquals:
     def evaluate(self, data: dict) -> bool:
         f_value = UtilField.get_nested_field_value(data, self.field)
         try:
-            if self.v_type == EnumValueType.auto_:
-                return f_value != self.value
-            if self.v_type == EnumValueType.datetime_:
-                return datetime.fromisoformat(str(f_value)) != self.value
-            if self.v_type == EnumValueType.int_:
-                return int(str(f_value)) != int(self.value)
-            if self.v_type == EnumValueType.floatStrict_:
-                return float(str(f_value)) != float(self.value)
-            if self.v_type == EnumValueType.floatEpsilon12_:
-                return abs(float(str(f_value)) - float(self.value)) >= 1e-12
-            if self.v_type == EnumValueType.boolean_:
-                return str(f_value).lower() != str(self.value).lower()
-            if self.v_type == EnumValueType.string_:
-                return str(f_value) != str(self.value)
-            return False
+            match self.v_type:
+                case EnumValueType.auto_:
+                    return f_value != self.value
+                case EnumValueType.datetime_:
+                    return datetime.fromisoformat(str(f_value)) != self.value
+                case EnumValueType.int_:
+                    return int(str(f_value)) != int(self.value)
+                case EnumValueType.floatStrict_:
+                    return float(str(f_value)) != float(self.value)
+                case EnumValueType.floatEpsilon12_:
+                    return abs(float(str(f_value)) - float(self.value)) >= 1e-12
+                case EnumValueType.boolean_:
+                    return str(f_value).lower() != str(self.value).lower()
+                case EnumValueType.string_:
+                    return str(f_value) != str(self.value)
         except Exception:
             return False
 
@@ -101,7 +102,7 @@ class FieldNotEquals:
         }
 
 
-class FieldGreaterThan:
+class FieldGreaterThan(QueryNode):
     def __init__(self, field: str, value, v_type: EnumValueType = EnumValueType.auto_):
         self.field = field
         self.value = value
@@ -121,21 +122,21 @@ class FieldGreaterThan:
         if f_value is None or self.value is None:
             return False
         try:
-            if self.v_type == EnumValueType.datetime_:
-                return datetime.fromisoformat(str(f_value)) > self.value
-            if self.v_type == EnumValueType.int_:
-                return int(str(f_value)) > int(self.value)
-            if self.v_type == EnumValueType.floatStrict_:
-                return float(str(f_value)) > float(self.value)
-            if self.v_type == EnumValueType.floatEpsilon12_:
-                return float(str(f_value)) - float(self.value) > 1e-12
-            if self.v_type == EnumValueType.string_:
-                return str(f_value) > str(self.value)
-            if self.v_type == EnumValueType.auto_:
-                return f_value > self.value
-            if self.v_type == EnumValueType.boolean_:
-                return False
-            return False
+            match self.v_type:
+                case EnumValueType.datetime_:
+                    return datetime.fromisoformat(str(f_value)) > self.value
+                case EnumValueType.int_:
+                    return int(str(f_value)) > int(self.value)
+                case EnumValueType.floatStrict_:
+                    return float(str(f_value)) > float(self.value)
+                case EnumValueType.floatEpsilon12_:
+                    return float(str(f_value)) - float(self.value) > 1e-12
+                case EnumValueType.string_:
+                    return str(f_value) > str(self.value)
+                case EnumValueType.auto_:
+                    return f_value > self.value
+                case EnumValueType.boolean_:
+                    return False
         except Exception:
             return False
 
@@ -150,7 +151,7 @@ class FieldGreaterThan:
         }
 
 
-class FieldLessThan:
+class FieldLessThan(QueryNode):
     def __init__(self, field: str, value, v_type: EnumValueType = EnumValueType.auto_):
         self.field = field
         self.value = value
@@ -170,21 +171,21 @@ class FieldLessThan:
         if f_value is None or self.value is None:
             return False
         try:
-            if self.v_type == EnumValueType.datetime_:
-                return datetime.fromisoformat(str(f_value)) < self.value
-            if self.v_type == EnumValueType.int_:
-                return int(str(f_value)) < int(self.value)
-            if self.v_type == EnumValueType.floatStrict_:
-                return float(str(f_value)) < float(self.value)
-            if self.v_type == EnumValueType.floatEpsilon12_:
-                return float(self.value) - float(str(f_value)) > 1e-12
-            if self.v_type == EnumValueType.string_:
-                return str(f_value) < str(self.value)
-            if self.v_type == EnumValueType.auto_:
-                return f_value < self.value
-            if self.v_type == EnumValueType.boolean_:
-                return False
-            return False
+            match self.v_type:
+                case EnumValueType.datetime_:
+                    return datetime.fromisoformat(str(f_value)) < self.value
+                case EnumValueType.int_:
+                    return int(str(f_value)) < int(self.value)
+                case EnumValueType.floatStrict_:
+                    return float(str(f_value)) < float(self.value)
+                case EnumValueType.floatEpsilon12_:
+                    return float(self.value) - float(str(f_value)) > 1e-12
+                case EnumValueType.string_:
+                    return str(f_value) < str(self.value)
+                case EnumValueType.auto_:
+                    return f_value < self.value
+                case EnumValueType.boolean_:
+                    return False
         except Exception:
             return False
 
@@ -199,7 +200,7 @@ class FieldLessThan:
         }
 
 
-class FieldGreaterThanOrEqual:
+class FieldGreaterThanOrEqual(QueryNode):
     def __init__(self, field: str, value, v_type: EnumValueType = EnumValueType.auto_):
         self.field = field
         self.value = value
@@ -219,21 +220,21 @@ class FieldGreaterThanOrEqual:
         if f_value is None or self.value is None:
             return False
         try:
-            if self.v_type == EnumValueType.datetime_:
-                return not datetime.fromisoformat(str(f_value)) < self.value
-            if self.v_type == EnumValueType.int_:
-                return int(str(f_value)) >= int(self.value)
-            if self.v_type == EnumValueType.floatStrict_:
-                return float(str(f_value)) >= float(self.value)
-            if self.v_type == EnumValueType.floatEpsilon12_:
-                return float(str(f_value)) - float(self.value) >= -1e-12
-            if self.v_type == EnumValueType.string_:
-                return str(f_value) >= str(self.value)
-            if self.v_type == EnumValueType.auto_:
-                return f_value >= self.value
-            if self.v_type == EnumValueType.boolean_:
-                return False
-            return False
+            match self.v_type:
+                case EnumValueType.datetime_:
+                    return not datetime.fromisoformat(str(f_value)) < self.value
+                case EnumValueType.int_:
+                    return int(str(f_value)) >= int(self.value)
+                case EnumValueType.floatStrict_:
+                    return float(str(f_value)) >= float(self.value)
+                case EnumValueType.floatEpsilon12_:
+                    return float(str(f_value)) - float(self.value) >= -1e-12
+                case EnumValueType.string_:
+                    return str(f_value) >= str(self.value)
+                case EnumValueType.auto_:
+                    return f_value >= self.value
+                case EnumValueType.boolean_:
+                    return False
         except Exception:
             return False
 
@@ -248,7 +249,7 @@ class FieldGreaterThanOrEqual:
         }
 
 
-class FieldLessThanOrEqual:
+class FieldLessThanOrEqual(QueryNode):
     def __init__(self, field: str, value, v_type: EnumValueType = EnumValueType.auto_):
         self.field = field
         self.value = value
@@ -268,21 +269,21 @@ class FieldLessThanOrEqual:
         if f_value is None or self.value is None:
             return False
         try:
-            if self.v_type == EnumValueType.datetime_:
-                return not datetime.fromisoformat(str(f_value)) > self.value
-            if self.v_type == EnumValueType.int_:
-                return int(str(f_value)) <= int(self.value)
-            if self.v_type == EnumValueType.floatStrict_:
-                return float(str(f_value)) <= float(self.value)
-            if self.v_type == EnumValueType.floatEpsilon12_:
-                return float(self.value) - float(str(f_value)) >= -1e-12
-            if self.v_type == EnumValueType.string_:
-                return str(f_value) <= str(self.value)
-            if self.v_type == EnumValueType.auto_:
-                return f_value <= self.value
-            if self.v_type == EnumValueType.boolean_:
-                return False
-            return False
+            match self.v_type:
+                case EnumValueType.datetime_:
+                    return not datetime.fromisoformat(str(f_value)) > self.value
+                case EnumValueType.int_:
+                    return int(str(f_value)) <= int(self.value)
+                case EnumValueType.floatStrict_:
+                    return float(str(f_value)) <= float(self.value)
+                case EnumValueType.floatEpsilon12_:
+                    return float(self.value) - float(str(f_value)) >= -1e-12
+                case EnumValueType.string_:
+                    return str(f_value) <= str(self.value)
+                case EnumValueType.auto_:
+                    return f_value <= self.value
+                case EnumValueType.boolean_:
+                    return False
         except Exception:
             return False
 
@@ -297,7 +298,7 @@ class FieldLessThanOrEqual:
         }
 
 
-class FieldMatchesRegex:
+class FieldMatchesRegex(QueryNode):
     def __init__(self, field: str, pattern: str):
         self.field = field
         self.pattern = pattern
@@ -321,7 +322,7 @@ class FieldMatchesRegex:
         }
 
 
-class FieldContains:
+class FieldContains(QueryNode):
     def __init__(self, field: str, value):
         self.field = field
         self.value = value
@@ -347,7 +348,7 @@ class FieldContains:
         }
 
 
-class FieldIn:
+class FieldIn(QueryNode):
     def __init__(self, field: str, values: list):
         self.field = field
         self.values = values
@@ -368,7 +369,7 @@ class FieldIn:
         }
 
 
-class FieldNotIn:
+class FieldNotIn(QueryNode):
     def __init__(self, field: str, values):
         self.field = field
         self.values = list(values)
@@ -389,7 +390,7 @@ class FieldNotIn:
         }
 
 
-class FieldStartsWith:
+class FieldStartsWith(QueryNode):
     def __init__(self, field: str, value: str):
         self.field = field
         self.value = value
@@ -411,7 +412,7 @@ class FieldStartsWith:
         }
 
 
-class FieldEndsWith:
+class FieldEndsWith(QueryNode):
     def __init__(self, field: str, value: str):
         self.field = field
         self.value = value

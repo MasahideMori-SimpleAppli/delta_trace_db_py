@@ -1,4 +1,6 @@
 # coding: utf-8
+from typing import Any, Dict
+
 class UtilField:
     """
     (en) Utility for field access used in internal DB processing.
@@ -21,7 +23,7 @@ class UtilField:
         keys = path.split('.')
         current: object | None = map_
         for key in keys:
-            if isinstance(current, Dict[str, Any]) and key in current:
+            if isinstance(current, dict) and key in current:
                 current = current[key]
             else:
                 return None

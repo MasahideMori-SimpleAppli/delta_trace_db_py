@@ -83,7 +83,7 @@ class User2(CloneableFile):
 # --------------------------
 
 def test_speed_crud():
-    records_count = 100_000
+    records_count = 100000
     print(f"speed test for {records_count} records")
     now = datetime.now()
 

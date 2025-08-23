@@ -2,10 +2,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict
 from delta_trace_db.query.nodes.enum_node_type import EnumNodeType
-from delta_trace_db.query.nodes.logical_node import AndNode, OrNode, NotNode
-from delta_trace_db.query.nodes.comparison_node import FieldEquals, FieldNotEquals, FieldGreaterThan, FieldLessThan, \
-    FieldGreaterThanOrEqual, FieldLessThanOrEqual, FieldMatchesRegex, FieldContains, FieldStartsWith, FieldEndsWith, \
-    FieldIn, FieldNotIn
 
 
 class QueryNode(ABC):
@@ -28,6 +24,13 @@ class QueryNode(ABC):
     @classmethod
     def from_dict(cls, src: Dict[str, Any]) -> "QueryNode":
         """Restore a QueryNode object from a dictionary."""
+        # 遅延インポート
+        from delta_trace_db.query.nodes.logical_node import AndNode, OrNode, NotNode
+        from delta_trace_db.query.nodes.comparison_node import FieldEquals, FieldNotEquals, FieldGreaterThan, \
+            FieldLessThan, \
+            FieldGreaterThanOrEqual, FieldLessThanOrEqual, FieldMatchesRegex, FieldContains, FieldStartsWith, \
+            FieldEndsWith, \
+            FieldIn, FieldNotIn
         node_type = EnumNodeType[src["type"]]
         match node_type:
             case EnumNodeType.and_:

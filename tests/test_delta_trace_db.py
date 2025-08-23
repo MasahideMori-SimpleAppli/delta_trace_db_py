@@ -184,14 +184,14 @@ def test_db_basic_operation_part1():
     assert result3[1].name == "サンプル花子"
 
     # pagingByOffset
-    q3Offset = QueryBuilder.search(
+    q3_offset = QueryBuilder.search(
         target="users",
         query_node=FieldStartsWith("name", "サンプル"),
         sort_obj=SingleSort(field="age", reversed_=True),
         limit=2,
         offset=2,
     ).build()
-    r3_offset = db.execute_query(Query.from_dict(q3Offset.to_dict()))
+    r3_offset = db.execute_query(Query.from_dict(q3_offset.to_dict()))
     assert r3_offset.db_length == 4
     assert r3_offset.hit_count == 4
     result3_offset = r3_offset.convert(User.from_dict)
@@ -333,7 +333,9 @@ def test_complex_search():
         User("3", "サンプル三郎", 31, now, now, {"a": "text", "b": 2}),
         User("4", "サンプル花子", 17, now, now, {"a": "text", "b": 3}),
     ]
-    QueryBuilder.add(target="users", add_data=users).build()
+    q1 = QueryBuilder.add(target="users", add_data=users).build()
+    r1 = db.execute_query(q1)
+    assert r1.is_success is True
 
     # ネストオブジェクト検索 (文字列)
     q2 = QueryBuilder.search(
