@@ -10,7 +10,7 @@ from delta_trace_db.query.query_result import QueryResult
 
 class Collection(CloneableFile):
     class_name = "Collection"
-    version = "6"
+    version = "7"
 
     def __init__(self):
         super().__init__()
@@ -79,6 +79,7 @@ class Collection(CloneableFile):
                     if is_single_target:
                         break
             if r:
+                # 要素が空ではないなら通知を発行。
                 self.notify_listeners()
             return QueryResult(True, q.type, UtilCopy.jsonable_deep_copy(r), len(self._data), len(r), len(r))
         else:
@@ -155,7 +156,7 @@ class Collection(CloneableFile):
                     except ValueError:
                         pass
         if q.limit is not None:
-            if q.end_before is not None:
+            if q.offset is None and q.start_after is None and q.end_before is not None:
                 r = r[-q.limit:] if len(r) > q.limit else r
             else:
                 r = r[:q.limit]
@@ -173,19 +174,6 @@ class Collection(CloneableFile):
         if q.sort_obj:
             r.sort(key=q.sort_obj.get_comparator())
         return QueryResult(True, q.type, r, len(self._data), 0, len(r))
-
-    def clear(self, q: Query) -> QueryResult:
-        pre_len = len(self._data)
-        self._data.clear()
-        self.notify_listeners()
-        return QueryResult(True, q.type, [], 0, pre_len, pre_len)
-
-    def clear_add(self, q: Query) -> QueryResult:
-        pre_len = len(self._data)
-        self._data.clear()
-        self._data.extend(UtilCopy.jsonable_deep_copy(q.add_data))
-        self.notify_listeners()
-        return QueryResult(True, q.type, [], len(self._data), pre_len, pre_len)
 
     def conform_to_template(self, q: Query) -> QueryResult:
         for item in self._data:
@@ -219,3 +207,16 @@ class Collection(CloneableFile):
 
     def count(self, q: Query) -> QueryResult:
         return QueryResult(True, q.type, [], len(self._data), 0, len(self._data))
+
+    def clear(self, q: Query) -> QueryResult:
+        pre_len = len(self._data)
+        self._data.clear()
+        self.notify_listeners()
+        return QueryResult(True, q.type, [], 0, pre_len, pre_len)
+
+    def clear_add(self, q: Query) -> QueryResult:
+        pre_len = len(self._data)
+        self._data.clear()
+        self._data.extend(UtilCopy.jsonable_deep_copy(q.add_data))
+        self.notify_listeners()
+        return QueryResult(True, q.type, [], len(self._data), pre_len, pre_len)
