@@ -9,6 +9,9 @@ There are some differences,
 such as arguments being snake case by default and an underscore being added after the variable name   
 if there is a namespace conflict with a standard function, but the usage is the same.
 
+Here's a simple example of server-side code:  
+[ServerSide Example](https://github.com/MasahideMori-SimpleAppli/delta_trace_db_py_server_example)
+
 ## Speed
 
 This package is an in-memory database, so it is generally fast.  
