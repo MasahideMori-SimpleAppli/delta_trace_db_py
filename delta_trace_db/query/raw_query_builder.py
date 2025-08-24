@@ -25,6 +25,7 @@ class RawQueryBuilder(QueryBuilder):
             rename_after: Optional[str] = None,
             limit: Optional[int] = None,
             must_affect_at_least_one: bool = True,
+            serial_key: Optional[str] = None,
             cause: Optional[Any] = None,
     ):
         super().__init__(
@@ -41,16 +42,20 @@ class RawQueryBuilder(QueryBuilder):
             rename_after=rename_after,
             limit=limit,
             must_affect_at_least_one=must_affect_at_least_one,
+            serial_key=serial_key,
             cause=cause
         )
         self.raw_add_data = raw_add_data
         self.raw_template = raw_template
 
     @classmethod
-    def add(cls, target: str, raw_add_data: List[Dict[str, Any]], must_affect_at_least_one: bool = True,
+    def add(cls, target: str, raw_add_data: List[Dict[str, Any]],
+            serial_key: Optional[str] = None,
+            must_affect_at_least_one: bool = True,
             cause: Optional[Any] = None):
         return cls(target=target, type_=EnumQueryType.add, raw_add_data=raw_add_data,
                    must_affect_at_least_one=must_affect_at_least_one,
+                   serial_key=serial_key,
                    cause=cause)
 
     @classmethod
@@ -207,10 +212,13 @@ class RawQueryBuilder(QueryBuilder):
                    cause=cause)
 
     @classmethod
-    def clear_add_all(cls, target: str, raw_add_data: List[Dict[str, Any]],
-                      must_affect_at_least_one: bool = True, cause: Optional[Any] = None):
+    def clear_add(cls, target: str, raw_add_data: List[Dict[str, Any]],
+                  must_affect_at_least_one: bool = True,
+                  serial_key: Optional[str] = None,
+                  cause: Optional[Any] = None):
         return cls(target=target, type_=EnumQueryType.clearAdd, raw_add_data=raw_add_data,
                    must_affect_at_least_one=must_affect_at_least_one,
+                   serial_key=serial_key,
                    cause=cause)
 
     def build(self) -> Query:
@@ -230,5 +238,6 @@ class RawQueryBuilder(QueryBuilder):
             limit=self.limit,
             return_data=self.return_data,
             must_affect_at_least_one=self.must_affect_at_least_one,
+            serial_key=self.serial_key,
             cause=self.cause
         )

@@ -26,6 +26,7 @@ class QueryBuilder:
                  limit: Optional[int] = None,
                  return_data: bool = False,
                  must_affect_at_least_one: bool = True,
+                 serial_key: Optional[str] = None,
                  cause: Optional[Cause] = None):
         self.target = target
         self.type = type_
@@ -42,16 +43,19 @@ class QueryBuilder:
         self.limit = limit
         self.return_data = return_data
         self.must_affect_at_least_one = must_affect_at_least_one
+        self.serial_key = serial_key
         self.cause = cause
 
     @classmethod
     def add(cls, target: str,
             add_data: List[CloneableFile],
             must_affect_at_least_one: bool = True,
+            serial_key: Optional[str] = None,
             cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.add,
                    add_data=add_data,
                    must_affect_at_least_one=must_affect_at_least_one,
+                   serial_key=serial_key,
                    cause=cause)
 
     @classmethod
@@ -175,13 +179,15 @@ class QueryBuilder:
                    cause=cause)
 
     @classmethod
-    def clear_add_all(cls, target: str,
-                      add_data: List[CloneableFile],
-                      must_affect_at_least_one: bool = True,
-                      cause: Optional[Cause] = None):
+    def clear_add(cls, target: str,
+                  add_data: List[CloneableFile],
+                  must_affect_at_least_one: bool = True,
+                  serial_key: Optional[str] = None,
+                  cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.clearAdd,
                    add_data=add_data,
                    must_affect_at_least_one=must_affect_at_least_one,
+                   serial_key=serial_key,
                    cause=cause)
 
     # --------------------------
@@ -208,5 +214,6 @@ class QueryBuilder:
             limit=self.limit,
             return_data=self.return_data,
             must_affect_at_least_one=self.must_affect_at_least_one,
+            serial_key=self.serial_key,
             cause=self.cause
         )

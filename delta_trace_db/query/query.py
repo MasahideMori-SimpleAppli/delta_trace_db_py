@@ -9,7 +9,7 @@ from delta_trace_db.db.util_copy import UtilCopy
 
 class Query:
     className: str = "Query"
-    version: str = "3"
+    version: str = "4"
 
     def __init__(
             self,
@@ -28,6 +28,7 @@ class Query:
             limit: Optional[int] = None,
             return_data: bool = False,
             must_affect_at_least_one: bool = True,
+            serial_key: Optional[str] = None,
             cause: Optional[Cause] = None,
     ):
         self.target = target
@@ -45,6 +46,7 @@ class Query:
         self.limit = limit
         self.return_data = return_data
         self.must_affect_at_least_one = must_affect_at_least_one
+        self.serial_key = serial_key
         self.cause = cause
 
     @classmethod
@@ -69,6 +71,7 @@ class Query:
             limit=src.get("limit"),
             return_data=src.get("returnData", False),
             must_affect_at_least_one=src.get("mustAffectAtLeastOne", True),
+            serial_key=src.get("serialKey", None),
             cause=Cause.from_dict(src["cause"]) if src.get("cause") else None,
         )
 
@@ -95,6 +98,7 @@ class Query:
             "limit": self.limit,
             "returnData": self.return_data,
             "mustAffectAtLeastOne": self.must_affect_at_least_one,
+            "serialKey": self.serial_key,
             "cause": self.cause.to_dict() if self.cause else None,
         }
 

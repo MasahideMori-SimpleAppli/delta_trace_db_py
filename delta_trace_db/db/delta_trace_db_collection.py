@@ -10,11 +10,12 @@ from delta_trace_db.query.query_result import QueryResult
 
 class Collection(CloneableFile):
     class_name = "Collection"
-    version = "7"
+    version = "8"
 
     def __init__(self):
         super().__init__()
         self._data: List[Dict[str, Any]] = []
+        self._serial_num: int = 0
         self.listeners: Set[Callable[[], None]] = set()
         self._is_transaction_mode: bool = False
         self.run_notify_listeners_in_transaction: bool = False
@@ -27,13 +28,15 @@ class Collection(CloneableFile):
     def from_dict(cls, src: Dict[str, Any]) -> "Collection":
         instance = cls()
         instance._data = UtilCopy.jsonable_deep_copy(src.get("data", []))
+        instance._serial_num = src.get("serialNum", 0)
         return instance
 
     def to_dict(self) -> Dict[str, Any]:
         return {
             "className": self.class_name,
             "version": self.version,
-            "data": UtilCopy.jsonable_deep_copy(self._data)
+            "data": UtilCopy.jsonable_deep_copy(self._data),
+            "serialNum": self._serial_num
         }
 
     def clone(self) -> "Collection":
@@ -65,7 +68,27 @@ class Collection(CloneableFile):
 
     def add_all(self, q: Query) -> QueryResult:
         add_data = UtilCopy.jsonable_deep_copy(q.add_data)
-        self._data.extend(add_data)
+        if q.serial_key is not None:
+            # 対象キーの存在チェック
+            for item in add_data:
+                if q.serial_key not in item:
+                    return QueryResult(
+                        is_success=False,
+                        type_=q.type,
+                        result=[],
+                        db_length=len(self._data),
+                        update_count=0,
+                        hit_count=0,
+                        error_message=f'The target serialKey does not exist. serialKey:{q.serial_key}',
+                    )
+
+            for item in add_data:
+                serial_num = self._serial_num
+                item[q.serial_key] = serial_num
+                self._serial_num += 1
+                self._data.append(item)
+        else:
+            self._data.extend(add_data)
         self.notify_listeners()
         return QueryResult(True, q.type, [], len(self._data), len(add_data), 0)
 
@@ -217,6 +240,27 @@ class Collection(CloneableFile):
     def clear_add(self, q: Query) -> QueryResult:
         pre_len = len(self._data)
         self._data.clear()
-        self._data.extend(UtilCopy.jsonable_deep_copy(q.add_data))
+        add_data = UtilCopy.jsonable_deep_copy(q.add_data)
+        if q.serial_key is not None:
+            # 対象キーの存在チェック
+            for item in add_data:
+                if q.serial_key not in item:
+                    return QueryResult(
+                        is_success=False,
+                        type_=q.type,
+                        result=[],
+                        db_length=len(self._data),
+                        update_count=0,
+                        hit_count=0,
+                        error_message=f'The target serialKey does not exist. serialKey:{q.serial_key}',
+                    )
+
+            for item in add_data:
+                serial_num = self._serial_num
+                item[q.serial_key] = serial_num
+                self._serial_num += 1
+                self._data.append(item)
+        else:
+            self._data.extend(add_data)
         self.notify_listeners()
         return QueryResult(True, q.type, [], len(self._data), pre_len, pre_len)

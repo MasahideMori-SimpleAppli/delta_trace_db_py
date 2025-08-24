@@ -78,6 +78,28 @@ class User2(CloneableFile):
         return User2.from_dict(self.to_dict())
 
 
+class Item1(CloneableFile):
+    def __init__(self, name, serial_key=None):
+        super().__init__()
+        self.serial_key = serial_key
+        self.name = name
+
+    @classmethod
+    def from_dict(cls, src) -> "Item1":
+        return Item1(
+            serial_key=src["serialKey"],
+            name=src["name"],
+        )
+
+    def to_dict(self):
+        return {
+            "serialKey": self.serial_key,
+            "name": self.name,
+        }
+
+    def clone(self):
+        return Item1.from_dict(self.to_dict())
+
 # --------------------------
 # Test function
 # --------------------------
@@ -241,3 +263,17 @@ def test_speed_crud():
     dt2 = datetime.now()
     print(f"end deleteOne: {(dt2 - dt1).total_seconds() * 1000:.0f} ms")
     print(f"returnsLength: {len(r7.result)}")
+
+    # add with serialKey
+    items = []
+    for i in range(records_count):
+        items.append(Item1(name=str(i)))
+    q8 = QueryBuilder.add(target="items", add_data=items, serial_key="serialKey").build()
+    print("start add with serialKey")
+    dt1 = datetime.now()
+    r8: QueryResult = db.execute_query(q8)
+    dt2 = datetime.now()
+    elapsed_ms = int((dt2.timestamp() - dt1.timestamp()) * 1000)
+    print(f"end add with serialKey: {elapsed_ms} ms")
+    assert r8.is_success is True
+    print("addedCount:" + str(r8.db_length))

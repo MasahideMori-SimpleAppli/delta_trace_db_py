@@ -102,6 +102,29 @@ class User3(CloneableFile):
         return User3.from_dict(self.to_dict())
 
 
+class Item1(CloneableFile):
+    def __init__(self, name, serial_key=None):
+        super().__init__()
+        self.serial_key = serial_key
+        self.name = name
+
+    @classmethod
+    def from_dict(cls, src) -> "Item1":
+        return Item1(
+            serial_key=src["serialKey"],
+            name=src["name"],
+        )
+
+    def to_dict(self):
+        return {
+            "serialKey": self.serial_key,
+            "name": self.name,
+        }
+
+    def clone(self):
+        return Item1.from_dict(self.to_dict())
+
+
 def test_db_basic_operation_part1():
     now = datetime.now()
     db = DeltaTraceDatabase()
@@ -120,7 +143,7 @@ def test_db_basic_operation_part1():
     assert r1.db_length == 4
 
     # clearAdd
-    q1ex = QueryBuilder.clear_add_all(target="users", add_data=users).build()
+    q1ex = QueryBuilder.clear_add(target="users", add_data=users).build()
     r1ex = db.execute_query(Query.from_dict(q1ex.to_dict()))
     assert r1ex.is_success
     assert r1ex.db_length == 4
@@ -388,3 +411,43 @@ def test_query_serialize():
 
     assert isinstance(Query.from_dict(q1.to_dict()).sort_obj, SingleSort)
     assert isinstance(Query.from_dict(q2.to_dict()).sort_obj, MultiSort)
+
+
+def test_add_with_serial_key():
+    # データベース作成とデータ追加
+    db = DeltaTraceDatabase()
+
+    # add
+    q1 = QueryBuilder.add(
+        target="items",
+        add_data=[
+            Item1(name="itemA"),
+            Item1(name="itemB"),
+        ],
+        serial_key="serialKey",
+    ).build()
+    r1: QueryResult = db.execute_query(q1)
+    assert r1.is_success is True
+
+    # シリアルキーが付与されているかのチェック
+    assert db.collection("items").raw[0]["serialKey"] == 0
+    assert db.collection("items").raw[1]["serialKey"] == 1
+
+    # シリアライズ・デシリアライズでの復元チェック
+    db = DeltaTraceDatabase.from_dict(db.to_dict())
+
+    # add
+    q2 = QueryBuilder.add(
+        target="items",
+        add_data=[
+            Item1(name="itemC"),
+            Item1(name="itemD"),
+        ],
+        serial_key="serialKey",
+    ).build()
+    r2: QueryResult = db.execute_query(q2)
+    assert r2.is_success is True
+
+    # シリアルキーが付与されているかのチェック
+    assert db.collection("items").raw[2]["serialKey"] == 2
+    assert db.collection("items").raw[3]["serialKey"] == 3
