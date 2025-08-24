@@ -1,3 +1,11 @@
+## 0.0.21.post1
+
+* Tweaked argument names to reduce discrepancies when compared to the Dart version.
+
+## 0.0.21
+
+* Added UtilQuery class.
+
 ## 0.0.20
 
 * When executing a query, users can now specify which queries are explicitly disallowed via optional arguments.

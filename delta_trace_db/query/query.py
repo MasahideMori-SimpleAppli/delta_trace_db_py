@@ -14,7 +14,7 @@ class Query:
     def __init__(
             self,
             target: str,
-            query_type: EnumQueryType,
+            type_: EnumQueryType,
             add_data: Optional[List[Dict[str, Any]]] = None,
             override_data: Optional[Dict[str, Any]] = None,
             template: Optional[Dict[str, Any]] = None,
@@ -31,7 +31,7 @@ class Query:
             cause: Optional[Cause] = None,
     ):
         self.target = target
-        self.type = query_type
+        self.type = type_
         self.add_data = add_data
         self.override_data = override_data
         self.template = template
@@ -51,7 +51,7 @@ class Query:
     def from_dict(cls, src: Dict[str, Any]) -> "Query":
         return cls(
             target=src["target"],
-            query_type=EnumQueryType[src["type"]],
+            type_=EnumQueryType[src["type"]],
             add_data=src.get("addData"),
             override_data=src.get("overrideData"),
             template=src.get("template"),

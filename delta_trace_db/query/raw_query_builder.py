@@ -11,7 +11,7 @@ class RawQueryBuilder(QueryBuilder):
     def __init__(
             self,
             target: str,
-            query_type: EnumQueryType,
+            type_: EnumQueryType,
             raw_add_data: Optional[List[Dict[str, Any]]] = None,
             raw_template: Optional[Dict[str, Any]] = None,
             query_node: Optional[QueryNode] = None,
@@ -29,7 +29,7 @@ class RawQueryBuilder(QueryBuilder):
     ):
         super().__init__(
             target=target,
-            query_type=query_type,
+            type_=type_,
             query_node=query_node,
             override_data=override_data,
             return_data=return_data,
@@ -49,7 +49,7 @@ class RawQueryBuilder(QueryBuilder):
     @classmethod
     def add(cls, target: str, raw_add_data: List[Dict[str, Any]], must_affect_at_least_one: bool = True,
             cause: Optional[Any] = None):
-        return cls(target=target, query_type=EnumQueryType.add, raw_add_data=raw_add_data,
+        return cls(target=target, type_=EnumQueryType.add, raw_add_data=raw_add_data,
                    must_affect_at_least_one=must_affect_at_least_one,
                    cause=cause)
 
@@ -66,7 +66,7 @@ class RawQueryBuilder(QueryBuilder):
     ):
         return cls(
             target=target,
-            query_type=EnumQueryType.update,
+            type_=EnumQueryType.update,
             query_node=query_node,
             override_data=override_data,
             return_data=return_data,
@@ -87,7 +87,7 @@ class RawQueryBuilder(QueryBuilder):
     ):
         return cls(
             target=target,
-            query_type=EnumQueryType.updateOne,
+            type_=EnumQueryType.updateOne,
             query_node=query_node,
             override_data=override_data,
             return_data=return_data,
@@ -107,7 +107,7 @@ class RawQueryBuilder(QueryBuilder):
     ):
         return cls(
             target=target,
-            query_type=EnumQueryType.delete,
+            type_=EnumQueryType.delete,
             query_node=query_node,
             return_data=return_data,
             sort_obj=sort_obj,
@@ -126,7 +126,7 @@ class RawQueryBuilder(QueryBuilder):
     ):
         return cls(
             target=target,
-            query_type=EnumQueryType.deleteOne,
+            type_=EnumQueryType.deleteOne,
             query_node=query_node,
             return_data=return_data,
             must_affect_at_least_one=must_affect_at_least_one,
@@ -147,7 +147,7 @@ class RawQueryBuilder(QueryBuilder):
     ):
         return cls(
             target=target,
-            query_type=EnumQueryType.search,
+            type_=EnumQueryType.search,
             query_node=query_node,
             sort_obj=sort_obj,
             offset=offset,
@@ -159,7 +159,7 @@ class RawQueryBuilder(QueryBuilder):
 
     @classmethod
     def get_all(cls, target: str, sort_obj: Optional[Any] = None, cause: Optional[Any] = None):
-        return cls(target=target, query_type=EnumQueryType.getAll, sort_obj=sort_obj, cause=cause)
+        return cls(target=target, type_=EnumQueryType.getAll, sort_obj=sort_obj, cause=cause)
 
     @classmethod
     def conform_to_template(
@@ -171,7 +171,7 @@ class RawQueryBuilder(QueryBuilder):
     ):
         return cls(
             target=target,
-            query_type=EnumQueryType.conformToTemplate,
+            type_=EnumQueryType.conformToTemplate,
             raw_template=raw_template,
             must_affect_at_least_one=must_affect_at_least_one,
             cause=cause
@@ -189,7 +189,7 @@ class RawQueryBuilder(QueryBuilder):
     ):
         return cls(
             target=target,
-            query_type=EnumQueryType.renameField,
+            type_=EnumQueryType.renameField,
             rename_before=rename_before,
             rename_after=rename_after,
             return_data=return_data,
@@ -199,24 +199,24 @@ class RawQueryBuilder(QueryBuilder):
 
     @classmethod
     def count(cls, target: str, cause: Optional[Any] = None):
-        return cls(target=target, query_type=EnumQueryType.count, cause=cause)
+        return cls(target=target, type_=EnumQueryType.count, cause=cause)
 
     @classmethod
     def clear(cls, target: str, must_affect_at_least_one: bool = True, cause: Optional[Any] = None):
-        return cls(target=target, query_type=EnumQueryType.clear, must_affect_at_least_one=must_affect_at_least_one,
+        return cls(target=target, type_=EnumQueryType.clear, must_affect_at_least_one=must_affect_at_least_one,
                    cause=cause)
 
     @classmethod
     def clear_add_all(cls, target: str, raw_add_data: List[Dict[str, Any]],
                       must_affect_at_least_one: bool = True, cause: Optional[Any] = None):
-        return cls(target=target, query_type=EnumQueryType.clearAdd, raw_add_data=raw_add_data,
+        return cls(target=target, type_=EnumQueryType.clearAdd, raw_add_data=raw_add_data,
                    must_affect_at_least_one=must_affect_at_least_one,
                    cause=cause)
 
     def build(self) -> Query:
         return Query(
             target=self.target,
-            query_type=self.query_type,
+            type_=self.type,
             add_data=self.raw_add_data,
             override_data=self.override_data,
             template=self.raw_template,

@@ -12,7 +12,7 @@ from .sort.abstract_sort import AbstractSort
 class QueryBuilder:
     def __init__(self,
                  target: str,
-                 query_type: EnumQueryType,
+                 type_: EnumQueryType,
                  add_data: Optional[List[CloneableFile]] = None,
                  override_data: Optional[Dict[str, Any]] = None,
                  template: Optional[Dict[str, Any]] = None,
@@ -28,7 +28,7 @@ class QueryBuilder:
                  must_affect_at_least_one: bool = True,
                  cause: Optional[Cause] = None):
         self.target = target
-        self.query_type = query_type
+        self.type = type_
         self.add_data = add_data
         self.override_data = override_data
         self.template = template
@@ -152,7 +152,7 @@ class QueryBuilder:
                      rename_after: str,
                      return_data: bool,
                      must_affect_at_least_one: bool = True,
-                     cause: Optional["Cause"] = None):
+                     cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.renameField,
                    rename_before=rename_before,
                    rename_after=rename_after,
@@ -162,14 +162,14 @@ class QueryBuilder:
 
     @classmethod
     def count(cls, target: str,
-              cause: Optional["Cause"] = None):
+              cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.count,
                    cause=cause)
 
     @classmethod
     def clear(cls, target: str,
               must_affect_at_least_one: bool = True,
-              cause: Optional["Cause"] = None):
+              cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.clear,
                    must_affect_at_least_one=must_affect_at_least_one,
                    cause=cause)
@@ -178,7 +178,7 @@ class QueryBuilder:
     def clear_add_all(cls, target: str,
                       add_data: List[CloneableFile],
                       must_affect_at_least_one: bool = True,
-                      cause: Optional["Cause"] = None):
+                      cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.clearAdd,
                    add_data=add_data,
                    must_affect_at_least_one=must_affect_at_least_one,
@@ -194,7 +194,7 @@ class QueryBuilder:
 
         return Query(
             target=self.target,
-            query_type=self.query_type,
+            type_=self.type,
             add_data=m_data,
             override_data=self.override_data,
             template=self.template,
