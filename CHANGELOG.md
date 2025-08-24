@@ -1,3 +1,7 @@
+## 0.0.20
+
+* When executing a query, users can now specify which queries are explicitly disallowed via optional arguments.
+
 ## 0.0.19
 
 * The README has been tweaked.
