@@ -1,3 +1,10 @@
+## 0.0.26
+
+* Several methods in the DeltaTraceDatabase class now have an allows parameter to grant permission
+  to execute queries.
+* When sorting, you can now convert to a specified type.
+* The code documentation has been improved.
+
 ## 0.0.25
 
 * Added reset serial option to the clear and clearAdd queries.
