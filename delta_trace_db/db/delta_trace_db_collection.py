@@ -10,7 +10,7 @@ from delta_trace_db.query.query_result import QueryResult
 
 class Collection(CloneableFile):
     class_name = "Collection"
-    version = "8"
+    version = "9"
 
     def __init__(self):
         super().__init__()
@@ -234,12 +234,16 @@ class Collection(CloneableFile):
     def clear(self, q: Query) -> QueryResult:
         pre_len = len(self._data)
         self._data.clear()
+        if q.reset_serial:
+            self._serial_num = 0
         self.notify_listeners()
         return QueryResult(True, q.type, [], 0, pre_len, pre_len)
 
     def clear_add(self, q: Query) -> QueryResult:
         pre_len = len(self._data)
         self._data.clear()
+        if q.reset_serial:
+            self._serial_num = 0
         add_data = UtilCopy.jsonable_deep_copy(q.add_data)
         if q.serial_key is not None:
             # 対象キーの存在チェック

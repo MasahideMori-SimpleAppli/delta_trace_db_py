@@ -451,3 +451,36 @@ def test_add_with_serial_key():
     # シリアルキーが付与されているかのチェック
     assert db.collection("items").raw[2]["serialKey"] == 2
     assert db.collection("items").raw[3]["serialKey"] == 3
+
+    # clear add
+    q3 = QueryBuilder.clear_add(
+        target="items",
+        add_data=[
+            Item1(name="itemC"),
+            Item1(name="itemD"),
+        ],
+        serial_key="serialKey",
+    ).build()
+    r3: QueryResult = db.execute_query(q3)
+    assert r3.is_success is True
+
+    # シリアルキーが付与されているかのチェック
+    assert db.collection("items").raw[0]["serialKey"] == 4
+    assert db.collection("items").raw[1]["serialKey"] == 5
+
+    # clear add with reset serial
+    q4 = QueryBuilder.clear_add(
+        target="items",
+        add_data=[
+            Item1(name="itemC"),
+            Item1(name="itemD"),
+        ],
+        serial_key="serialKey",
+        reset_serial=True
+    ).build()
+    r4: QueryResult = db.execute_query(q4)
+    assert r4.is_success is True
+
+    # シリアルキーがリセット後に付与されているかのチェック
+    assert db.collection("items").raw[0]["serialKey"] == 0
+    assert db.collection("items").raw[1]["serialKey"] == 1

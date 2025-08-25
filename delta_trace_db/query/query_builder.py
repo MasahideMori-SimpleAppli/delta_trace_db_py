@@ -27,6 +27,7 @@ class QueryBuilder:
                  return_data: bool = False,
                  must_affect_at_least_one: bool = True,
                  serial_key: Optional[str] = None,
+                 reset_serial: bool = False,
                  cause: Optional[Cause] = None):
         self.target = target
         self.type = type_
@@ -44,6 +45,7 @@ class QueryBuilder:
         self.return_data = return_data
         self.must_affect_at_least_one = must_affect_at_least_one
         self.serial_key = serial_key
+        self.reset_serial = reset_serial
         self.cause = cause
 
     @classmethod
@@ -173,9 +175,11 @@ class QueryBuilder:
     @classmethod
     def clear(cls, target: str,
               must_affect_at_least_one: bool = True,
+              reset_serial: bool = False,
               cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.clear,
                    must_affect_at_least_one=must_affect_at_least_one,
+                   reset_serial=reset_serial,
                    cause=cause)
 
     @classmethod
@@ -183,11 +187,13 @@ class QueryBuilder:
                   add_data: List[CloneableFile],
                   must_affect_at_least_one: bool = True,
                   serial_key: Optional[str] = None,
+                  reset_serial: bool = False,
                   cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.clearAdd,
                    add_data=add_data,
                    must_affect_at_least_one=must_affect_at_least_one,
                    serial_key=serial_key,
+                   reset_serial=reset_serial,
                    cause=cause)
 
     # --------------------------
@@ -215,5 +221,6 @@ class QueryBuilder:
             return_data=self.return_data,
             must_affect_at_least_one=self.must_affect_at_least_one,
             serial_key=self.serial_key,
+            reset_serial=self.reset_serial,
             cause=self.cause
         )

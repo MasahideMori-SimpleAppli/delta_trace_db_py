@@ -1,3 +1,7 @@
+## 0.0.25
+
+* Added reset serial option to the clear and clearAdd queries.
+
 ## 0.0.23
 
 * The serialKey parameter has been added to Query(add, clearAdd).

@@ -26,6 +26,7 @@ class RawQueryBuilder(QueryBuilder):
             limit: Optional[int] = None,
             must_affect_at_least_one: bool = True,
             serial_key: Optional[str] = None,
+            reset_serial: bool = False,
             cause: Optional[Any] = None,
     ):
         super().__init__(
@@ -43,6 +44,7 @@ class RawQueryBuilder(QueryBuilder):
             limit=limit,
             must_affect_at_least_one=must_affect_at_least_one,
             serial_key=serial_key,
+            reset_serial=reset_serial,
             cause=cause
         )
         self.raw_add_data = raw_add_data
@@ -207,18 +209,22 @@ class RawQueryBuilder(QueryBuilder):
         return cls(target=target, type_=EnumQueryType.count, cause=cause)
 
     @classmethod
-    def clear(cls, target: str, must_affect_at_least_one: bool = True, cause: Optional[Any] = None):
+    def clear(cls, target: str, must_affect_at_least_one: bool = True, reset_serial: bool = False,
+              cause: Optional[Any] = None):
         return cls(target=target, type_=EnumQueryType.clear, must_affect_at_least_one=must_affect_at_least_one,
+                   reset_serial=reset_serial,
                    cause=cause)
 
     @classmethod
     def clear_add(cls, target: str, raw_add_data: List[Dict[str, Any]],
                   must_affect_at_least_one: bool = True,
                   serial_key: Optional[str] = None,
+                  reset_serial: bool = False,
                   cause: Optional[Any] = None):
         return cls(target=target, type_=EnumQueryType.clearAdd, raw_add_data=raw_add_data,
                    must_affect_at_least_one=must_affect_at_least_one,
                    serial_key=serial_key,
+                   reset_serial=reset_serial,
                    cause=cause)
 
     def build(self) -> Query:
@@ -239,5 +245,6 @@ class RawQueryBuilder(QueryBuilder):
             return_data=self.return_data,
             must_affect_at_least_one=self.must_affect_at_least_one,
             serial_key=self.serial_key,
+            reset_serial=self.reset_serial,
             cause=self.cause
         )
