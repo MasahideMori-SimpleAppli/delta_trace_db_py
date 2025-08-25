@@ -17,10 +17,10 @@ Here's a simple example of server-side code:
 This package is an in-memory database, so it is generally fast.  
 Currently, there is no mechanism to speed it up, but it works almost the same as a for loop in a program,  
 so there is usually no problem with around 100,000 records.  
-I recommend that you test it in an actual environment using speed_test.dart in the test folder.  
+I recommend that you test it in an actual environment using test_speed.py in the test folder.  
 However, since it consumes RAM capacity according to the amount of data,  
 if you need an extremely large database, consider using a general database.  
-For reference, below are the results of a speed test (test/speed_test.dart) run on a slightly  
+For reference, below are the results of a speed test (tests/test_speed.py) run on a slightly  
 older PC equipped with a Ryzen 3600 CPU.  
 The test conditions were chosen to take a sufficiently long time, but I think it will rarely
 cause   
