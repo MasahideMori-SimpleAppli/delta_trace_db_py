@@ -69,11 +69,9 @@ usability and creating peripheral tools will take priority.
 ## Notes
 
 This package is primarily designed for single-threaded operation.  
-However, unlike the Dart version, the DeltaTraceDatabase class's execute_query_object, execute_query,  
-and execute_transaction_query methods internally acquire an RLock, making these query execution methods safe to call  
-from multiple threads.  
-
-Note that other classes and utility functions are not thread-safe, so caution is required if they are used concurrently.  
+Unlike the Dart version, most methods within the DeltaTraceDatabase class acquire an RLock and can be called in
+multi-threaded mode, but other classes and utility functions are not thread-safe, 
+so care must be taken when using them in parallel.
 Additionally, for parallel processing that does not share memory (e.g., across processes), message passing or similar 
 mechanisms are required, just like in the Dart version.  
 

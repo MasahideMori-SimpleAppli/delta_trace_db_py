@@ -17,7 +17,7 @@ from delta_trace_db.query.util_query import UtilQuery
 
 class DeltaTraceDatabase(CloneableFile):
     class_name = "DeltaTraceDatabase"
-    version = "9.post1"
+    version = "9.post2"
 
     def __init__(self):
         super().__init__()
@@ -43,48 +43,56 @@ class DeltaTraceDatabase(CloneableFile):
         return result
 
     def collection(self, name: str) -> Collection:
-        if name in self._collections:
-            return self._collections[name]
-        col = Collection()
-        self._collections[name] = col
-        return col
+        with self._lock:
+            if name in self._collections:
+                return self._collections[name]
+            col = Collection()
+            self._collections[name] = col
+            return col
 
     def collection_to_dict(self, name: str) -> Dict[str, Any]:
-        return self._collections.get(name).to_dict() if name in self._collections else {}
+        with self._lock:
+            return self._collections.get(name).to_dict() if name in self._collections else {}
 
     def collection_from_dict(self, name: str, src: Dict[str, Any]) -> Collection:
-        col = Collection.from_dict(src)
-        self._collections[name] = col
-        return col
+        with self._lock:
+            col = Collection.from_dict(src)
+            self._collections[name] = col
+            return col
 
     def collection_from_dict_keep_listener(self, name: str, src: Dict[str, Any]) -> Collection:
-        col = Collection.from_dict(src)
-        listeners_buf: Set[Callable[[], None]] = self._collections.get(
-            name).listeners if name in self._collections else set()
-        self._collections[name] = col
-        if listeners_buf:
-            self._collections[name].listeners = listeners_buf
-        return col
+        with self._lock:
+            col = Collection.from_dict(src)
+            listeners_buf: Set[Callable[[], None]] = self._collections.get(
+                name).listeners if name in self._collections else set()
+            self._collections[name] = col
+            if listeners_buf:
+                self._collections[name].listeners = listeners_buf
+            return col
 
     def clone(self) -> "DeltaTraceDatabase":
-        return DeltaTraceDatabase.from_dict(self.to_dict())
+        with self._lock:
+            return DeltaTraceDatabase.from_dict(self.to_dict())
 
     @property
     def raw(self) -> Dict[str, Collection]:
         return self._collections
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
-            "className": self.class_name,
-            "version": self.version,
-            "collections": {k: v.to_dict() for k, v in self._collections.items()},
-        }
+        with self._lock:
+            return {
+                "className": self.class_name,
+                "version": self.version,
+                "collections": {k: v.to_dict() for k, v in self._collections.items()},
+            }
 
     def add_listener(self, target: str, cb: Callable[[], None]):
-        self.collection(target).add_listener(cb)
+        with self._lock:
+            self.collection(target).add_listener(cb)
 
     def remove_listener(self, target: str, cb: Callable[[], None]):
-        self.collection(target).remove_listener(cb)
+        with self._lock:
+            self.collection(target).remove_listener(cb)
 
     def execute_query_object(self, query: Any,
                              collection_permissions: Optional[Dict[str, Permission]] = None) -> QueryExecutionResult:

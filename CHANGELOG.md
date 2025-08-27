@@ -1,3 +1,7 @@
+## 0.0.30.post1
+
+* To improve data consistency when saving, RLock has been extended to the entire DeltaTraceDatabase, excluding ineffective methods such as raw.
+
 ## 0.0.30
 
 * Updated README.
