@@ -10,7 +10,7 @@ from delta_trace_db.query.query_result import QueryResult
 
 class Collection(CloneableFile):
     class_name = "Collection"
-    version = "9"
+    version = "10"
 
     def __init__(self):
         super().__init__()
@@ -68,6 +68,7 @@ class Collection(CloneableFile):
 
     def add_all(self, q: Query) -> QueryResult:
         add_data = UtilCopy.jsonable_deep_copy(q.add_data)
+        added_items = []
         if q.serial_key is not None:
             # 対象キーの存在チェック
             for item in add_data:
@@ -87,10 +88,14 @@ class Collection(CloneableFile):
                 item[q.serial_key] = serial_num
                 self._serial_num += 1
                 self._data.append(item)
+                if q.return_data:
+                    added_items.append(item)
         else:
             self._data.extend(add_data)
+            if q.return_data:
+                added_items.extend(add_data)
         self.notify_listeners()
-        return QueryResult(True, q.type, [], len(self._data), len(add_data), 0)
+        return QueryResult(True, q.type, UtilCopy.jsonable_deep_copy(added_items), len(self._data), len(add_data), 0)
 
     def update(self, q: Query, is_single_target: bool) -> QueryResult:
         if q.return_data:
@@ -244,6 +249,7 @@ class Collection(CloneableFile):
         self._data.clear()
         if q.reset_serial:
             self._serial_num = 0
+        added_items = []
         add_data = UtilCopy.jsonable_deep_copy(q.add_data)
         if q.serial_key is not None:
             # 対象キーの存在チェック
@@ -264,7 +270,11 @@ class Collection(CloneableFile):
                 item[q.serial_key] = serial_num
                 self._serial_num += 1
                 self._data.append(item)
+                if q.return_data:
+                    added_items.append(item)
         else:
             self._data.extend(add_data)
+            if q.return_data:
+                added_items.extend(add_data)
         self.notify_listeners()
-        return QueryResult(True, q.type, [], len(self._data), pre_len, pre_len)
+        return QueryResult(True, q.type, UtilCopy.jsonable_deep_copy(added_items), len(self._data), pre_len, pre_len)

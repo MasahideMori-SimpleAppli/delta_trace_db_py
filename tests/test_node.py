@@ -1,3 +1,4 @@
+# coding: utf-8
 import json
 
 from delta_trace_db.query.nodes.comparison_node import (

@@ -1,7 +1,14 @@
+# coding: utf-8
 import json
 from datetime import datetime, timedelta
 
 from delta_trace_db.db.delta_trace_db_core import DeltaTraceDatabase
+from delta_trace_db.query.cause.actor import Actor
+from delta_trace_db.query.cause.cause import Cause
+from delta_trace_db.query.cause.enum_actor_type import EnumActorType
+from delta_trace_db.query.cause.permission import Permission
+from delta_trace_db.query.cause.temporal_trace.temporal_trace import TemporalTrace
+from delta_trace_db.query.enum_query_type import EnumQueryType
 from delta_trace_db.query.nodes.comparison_node import FieldStartsWith, FieldGreaterThanOrEqual, FieldLessThanOrEqual, \
     FieldEquals
 from delta_trace_db.query.nodes.logical_node import AndNode, OrNode
@@ -321,7 +328,22 @@ def test_save_and_load():
     q = QueryBuilder.add(
         target="users",
         add_data=users,
-        cause=None  # Cause ダミー
+        cause=Cause(who=Actor(actor_type=EnumActorType.system,
+                              actor_id="1",
+                              roles=["tester"],
+                              permissions=["users:write:all"],
+                              collection_permissions={
+                                  "users": Permission([EnumQueryType.add]),
+                              },
+                              context={"otherData": "test"}, ),
+                    when=TemporalTrace(),
+                    what="The test of serialize and deserialize.",
+                    why="test",
+                    from_="test",
+                    serial="1",
+                    chain_parent_serial="1",
+                    context={"test": "test"},
+                    confidence_score=1.0)
     ).build()
 
     # JSON 変換テスト
@@ -484,3 +506,31 @@ def test_add_with_serial_key():
     # シリアルキーがリセット後に付与されているかのチェック
     assert db.collection("items").raw[0]["serialKey"] == 0
     assert db.collection("items").raw[1]["serialKey"] == 1
+
+
+def test_add_with_return_data():
+    # データベース作成
+    db = DeltaTraceDatabase()
+
+    # データ追加クエリ作成
+    q1 = QueryBuilder.add(
+        target='items',
+        add_data=[
+            Item1(name="itemA"),
+            Item1(name="itemB")
+        ],
+        serial_key="serialKey",
+        return_data=True
+    ).build()
+
+    # クエリ実行
+    r1 = db.execute_query(q1)
+
+    # 結果の検証
+    assert r1.is_success is True
+    assert len(r1.result) > 0
+
+    r_items = r1.convert(Item1.from_dict)
+
+    assert r_items[0].serial_key == 0
+    assert r_items[1].serial_key == 1

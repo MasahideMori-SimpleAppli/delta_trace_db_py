@@ -1,3 +1,4 @@
+# coding: utf-8
 from datetime import datetime, timedelta
 from file_state_manager.cloneable_file import CloneableFile
 

@@ -51,11 +51,13 @@ class QueryBuilder:
     @classmethod
     def add(cls, target: str,
             add_data: List[CloneableFile],
+            return_data: bool = False,
             must_affect_at_least_one: bool = True,
             serial_key: Optional[str] = None,
             cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.add,
                    add_data=add_data,
+                   return_data=return_data,
                    must_affect_at_least_one=must_affect_at_least_one,
                    serial_key=serial_key,
                    cause=cause)
@@ -64,7 +66,7 @@ class QueryBuilder:
     def update(cls, target: str,
                query_node: QueryNode,
                override_data: Dict[str, Any],
-               return_data: bool,
+               return_data: bool = False,
                sort_obj: Optional[AbstractSort] = None,
                must_affect_at_least_one: bool = True,
                cause: Optional[Cause] = None):
@@ -80,7 +82,7 @@ class QueryBuilder:
     def update_one(cls, target: str,
                    query_node: QueryNode,
                    override_data: Dict[str, Any],
-                   return_data: bool,
+                   return_data: bool = False,
                    must_affect_at_least_one: bool = True,
                    cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.updateOne,
@@ -93,7 +95,7 @@ class QueryBuilder:
     @classmethod
     def delete(cls, target: str,
                query_node: QueryNode,
-               return_data: bool,
+               return_data: bool = False,
                sort_obj: Optional[AbstractSort] = None,
                must_affect_at_least_one: bool = True,
                cause: Optional[Cause] = None):
@@ -107,7 +109,7 @@ class QueryBuilder:
     @classmethod
     def delete_one(cls, target: str,
                    query_node: QueryNode,
-                   return_data: bool,
+                   return_data: bool = False,
                    must_affect_at_least_one: bool = True,
                    cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.deleteOne,
@@ -156,7 +158,7 @@ class QueryBuilder:
     def rename_field(cls, target: str,
                      rename_before: str,
                      rename_after: str,
-                     return_data: bool,
+                     return_data: bool = False,
                      must_affect_at_least_one: bool = True,
                      cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.renameField,
@@ -185,12 +187,14 @@ class QueryBuilder:
     @classmethod
     def clear_add(cls, target: str,
                   add_data: List[CloneableFile],
+                  return_data: bool = False,
                   must_affect_at_least_one: bool = True,
                   serial_key: Optional[str] = None,
                   reset_serial: bool = False,
                   cause: Optional[Cause] = None):
         return cls(target, EnumQueryType.clearAdd,
                    add_data=add_data,
+                   return_data=return_data,
                    must_affect_at_least_one=must_affect_at_least_one,
                    serial_key=serial_key,
                    reset_serial=reset_serial,

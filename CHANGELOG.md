@@ -1,3 +1,12 @@
+## 0.0.29
+
+* The order of arguments in RawQueryBuilder's add has been corrected to align with other functions.
+* Fixed an issue where TimestampNode times were not the same as in the Dart version.
+* The returnData flag is now available for Add and ClearAdd queries.
+* The returnData flag for various queries has been changed to an optional argument.
+* The Actor class now has a collectionPermissions, which uses a dedicated Permissions type.
+* As a result, the method for setting permissions in the DeltaTraceDatabase class has been changed from an Enum to a dedicated type.
+
 ## 0.0.26
 
 * Several methods in the DeltaTraceDatabase class now have an allows parameter to grant permission

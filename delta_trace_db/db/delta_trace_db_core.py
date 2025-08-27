@@ -4,17 +4,19 @@ from typing import Any, Dict, List, Set, Callable, Optional
 from file_state_manager.cloneable_file import CloneableFile
 
 from delta_trace_db.db.delta_trace_db_collection import Collection
+from delta_trace_db.query.cause.permission import Permission
 from delta_trace_db.query.enum_query_type import EnumQueryType
 from delta_trace_db.query.query import Query
 from delta_trace_db.query.query_execution_result import QueryExecutionResult
 from delta_trace_db.query.query_result import QueryResult
 from delta_trace_db.query.transaction_query import TransactionQuery
 from delta_trace_db.query.transaction_query_result import TransactionQueryResult
+from delta_trace_db.query.util_query import UtilQuery
 
 
 class DeltaTraceDatabase(CloneableFile):
     class_name = "DeltaTraceDatabase"
-    version = "8"
+    version = "9"
 
     def __init__(self):
         super().__init__()
@@ -82,38 +84,26 @@ class DeltaTraceDatabase(CloneableFile):
     def remove_listener(self, target: str, cb: Callable[[], None]):
         self.collection(target).remove_listener(cb)
 
-    def execute_query_object(self, query: Any, prohibit: Optional[List[EnumQueryType]] = None,
-                             allows: Optional[List[EnumQueryType]] = None) -> QueryExecutionResult:
+    def execute_query_object(self, query: Any,
+                             collection_permissions: Optional[Dict[str, Permission]] = None) -> QueryExecutionResult:
         if isinstance(query, Query):
-            return self.execute_query(query, prohibit=prohibit, allows=allows)
+            return self.execute_query(query, collection_permissions=collection_permissions)
         elif isinstance(query, TransactionQuery):
-            return self.execute_transaction_query(query, prohibit=prohibit, allows=allows)
+            return self.execute_transaction_query(query, collection_permissions=collection_permissions)
         elif isinstance(query, dict):
             if query.get("className") == "Query":
-                return self.execute_query(Query.from_dict(query), prohibit=prohibit, allows=allows)
+                return self.execute_query(Query.from_dict(query), collection_permissions=collection_permissions)
             elif query.get("className") == "TransactionQuery":
-                return self.execute_transaction_query(TransactionQuery.from_dict(query), prohibit=prohibit,
-                                                      allows=allows)
+                return self.execute_transaction_query(TransactionQuery.from_dict(query),
+                                                      collection_permissions=collection_permissions)
             else:
                 raise ValueError(f"Unsupported query class: {query.get('className')}")
         else:
             raise ValueError(f"Unsupported query type: {type(query)}")
 
-    def execute_query(self, q: Query, prohibit: Optional[List[EnumQueryType]] = None,
-                      allows: Optional[List[EnumQueryType]] = None) -> QueryResult:
-        # prohibitのチェック
-        if prohibit is not None and q.type in prohibit:
-            return QueryResult(
-                is_success=False,
-                type_=q.type,
-                result=[],
-                db_length=-1,
-                update_count=0,
-                hit_count=0,
-                error_message="Operation not permitted."
-            )
-        # allowsのチェック
-        if allows is not None and q.type not in allows:
+    def execute_query(self, q: Query, collection_permissions: Optional[Dict[str, Permission]] = None) -> QueryResult:
+        # パーミッションのチェック
+        if not UtilQuery.check_permissions(q=q, collection_permissions=collection_permissions):
             return QueryResult(
                 is_success=False,
                 type_=q.type,
@@ -186,8 +176,8 @@ class DeltaTraceDatabase(CloneableFile):
             )
 
     def execute_transaction_query(self, q: TransactionQuery,
-                                  prohibit: Optional[List[EnumQueryType]] = None,
-                                  allows: Optional[List[EnumQueryType]] = None) -> TransactionQueryResult:
+                                  collection_permissions: Optional[
+                                      Dict[str, Permission]] = None) -> TransactionQueryResult:
         results: List[QueryResult] = []
         try:
             buff: Dict[str, Dict[str, Any]] = {}
@@ -197,7 +187,7 @@ class DeltaTraceDatabase(CloneableFile):
                     self.collection(i.target).change_transaction_mode(True)
             try:
                 for i in q.queries:
-                    results.append(self.execute_query(i, prohibit=prohibit, allows=allows))
+                    results.append(self.execute_query(i, collection_permissions=collection_permissions))
             except Exception:
                 for key, val in buff.items():
                     self.collection_from_dict_keep_listener(key, val)

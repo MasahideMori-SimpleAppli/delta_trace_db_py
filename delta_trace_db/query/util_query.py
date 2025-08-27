@@ -1,6 +1,7 @@
 # coding: utf-8
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
+from delta_trace_db.query.cause.permission import Permission
 from delta_trace_db.query.query import Query
 from delta_trace_db.query.transaction_query import TransactionQuery
 
@@ -35,3 +36,17 @@ class UtilQuery:
                 raise ValueError(f"Unsupported query class: {src.get('className')}")
         except Exception:
             raise ValueError("Unsupported object")
+
+    @staticmethod
+    def check_permissions(q: Query, collection_permissions: Optional[Dict[str, Permission]]) -> bool:
+        if collection_permissions is None:
+            return True
+        if q.target not in collection_permissions:
+            return False
+
+        # allowsのチェック
+        p = collection_permissions[q.target]
+        if q.type in p.allows:
+            return True
+
+        return False

@@ -52,10 +52,12 @@ class RawQueryBuilder(QueryBuilder):
 
     @classmethod
     def add(cls, target: str, raw_add_data: List[Dict[str, Any]],
-            serial_key: Optional[str] = None,
+            return_data: bool = False,
             must_affect_at_least_one: bool = True,
+            serial_key: Optional[str] = None,
             cause: Optional[Any] = None):
         return cls(target=target, type_=EnumQueryType.add, raw_add_data=raw_add_data,
+                   return_data=return_data,
                    must_affect_at_least_one=must_affect_at_least_one,
                    serial_key=serial_key,
                    cause=cause)
@@ -66,7 +68,7 @@ class RawQueryBuilder(QueryBuilder):
             target: str,
             query_node: QueryNode,
             override_data: Optional[Dict[str, Any]],
-            return_data: bool,
+            return_data: bool = False,
             sort_obj: Optional[Any] = None,
             must_affect_at_least_one: bool = True,
             cause: Optional[Any] = None
@@ -88,7 +90,7 @@ class RawQueryBuilder(QueryBuilder):
             target: str,
             query_node: QueryNode,
             override_data: Optional[Dict[str, Any]],
-            return_data: bool,
+            return_data: bool = False,
             must_affect_at_least_one: bool = True,
             cause: Optional[Any] = None
     ):
@@ -107,7 +109,7 @@ class RawQueryBuilder(QueryBuilder):
             cls,
             target: str,
             query_node: QueryNode,
-            return_data: bool,
+            return_data: bool = False,
             sort_obj: Optional[Any] = None,
             must_affect_at_least_one: bool = True,
             cause: Optional[Any] = None
@@ -127,7 +129,7 @@ class RawQueryBuilder(QueryBuilder):
             cls,
             target: str,
             query_node: QueryNode,
-            return_data: bool,
+            return_data: bool = False,
             must_affect_at_least_one: bool = True,
             cause: Optional[Any] = None
     ):
@@ -190,7 +192,7 @@ class RawQueryBuilder(QueryBuilder):
             target: str,
             rename_before: str,
             rename_after: str,
-            return_data: bool,
+            return_data: bool = False,
             must_affect_at_least_one: bool = True,
             cause: Optional[Any] = None
     ):
@@ -217,11 +219,13 @@ class RawQueryBuilder(QueryBuilder):
 
     @classmethod
     def clear_add(cls, target: str, raw_add_data: List[Dict[str, Any]],
+                  return_data: bool = False,
                   must_affect_at_least_one: bool = True,
                   serial_key: Optional[str] = None,
                   reset_serial: bool = False,
                   cause: Optional[Any] = None):
         return cls(target=target, type_=EnumQueryType.clearAdd, raw_add_data=raw_add_data,
+                   return_data=return_data,
                    must_affect_at_least_one=must_affect_at_least_one,
                    serial_key=serial_key,
                    reset_serial=reset_serial,
