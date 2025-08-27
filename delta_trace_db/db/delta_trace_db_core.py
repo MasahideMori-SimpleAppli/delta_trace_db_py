@@ -1,4 +1,5 @@
 # coding: utf-8
+from threading import RLock
 from typing import Any, Dict, List, Set, Callable, Optional
 
 from file_state_manager.cloneable_file import CloneableFile
@@ -16,11 +17,12 @@ from delta_trace_db.query.util_query import UtilQuery
 
 class DeltaTraceDatabase(CloneableFile):
     class_name = "DeltaTraceDatabase"
-    version = "9"
+    version = "9.post1"
 
     def __init__(self):
         super().__init__()
         self._collections: Dict[str, Collection] = {}
+        self._lock = RLock()  # execute_query / execute_transaction_query 共通
 
     @classmethod
     def from_dict(cls, src: Dict[str, Any]) -> "DeltaTraceDatabase":
@@ -86,131 +88,134 @@ class DeltaTraceDatabase(CloneableFile):
 
     def execute_query_object(self, query: Any,
                              collection_permissions: Optional[Dict[str, Permission]] = None) -> QueryExecutionResult:
-        if isinstance(query, Query):
-            return self.execute_query(query, collection_permissions=collection_permissions)
-        elif isinstance(query, TransactionQuery):
-            return self.execute_transaction_query(query, collection_permissions=collection_permissions)
-        elif isinstance(query, dict):
-            if query.get("className") == "Query":
-                return self.execute_query(Query.from_dict(query), collection_permissions=collection_permissions)
-            elif query.get("className") == "TransactionQuery":
-                return self.execute_transaction_query(TransactionQuery.from_dict(query),
-                                                      collection_permissions=collection_permissions)
+        with self._lock:  # 排他制御
+            if isinstance(query, Query):
+                return self.execute_query(query, collection_permissions=collection_permissions)
+            elif isinstance(query, TransactionQuery):
+                return self.execute_transaction_query(query, collection_permissions=collection_permissions)
+            elif isinstance(query, dict):
+                if query.get("className") == "Query":
+                    return self.execute_query(Query.from_dict(query), collection_permissions=collection_permissions)
+                elif query.get("className") == "TransactionQuery":
+                    return self.execute_transaction_query(TransactionQuery.from_dict(query),
+                                                          collection_permissions=collection_permissions)
+                else:
+                    raise ValueError(f"Unsupported query class: {query.get('className')}")
             else:
-                raise ValueError(f"Unsupported query class: {query.get('className')}")
-        else:
-            raise ValueError(f"Unsupported query type: {type(query)}")
+                raise ValueError(f"Unsupported query type: {type(query)}")
 
     def execute_query(self, q: Query, collection_permissions: Optional[Dict[str, Permission]] = None) -> QueryResult:
-        # パーミッションのチェック
-        if not UtilQuery.check_permissions(q=q, collection_permissions=collection_permissions):
-            return QueryResult(
-                is_success=False,
-                type_=q.type,
-                result=[],
-                db_length=-1,
-                update_count=0,
-                hit_count=0,
-                error_message="Operation not permitted."
-            )
-        col = self.collection(q.target)
-        try:
-            match q.type:
-                case EnumQueryType.add:
-                    r = col.add_all(q)
-                case EnumQueryType.update:
-                    r = col.update(q, is_single_target=False)
-                case EnumQueryType.updateOne:
-                    r = col.update(q, is_single_target=True)
-                case EnumQueryType.delete:
-                    r = col.delete(q)
-                case EnumQueryType.deleteOne:
-                    r = col.delete_one(q)
-                case EnumQueryType.search:
-                    r = col.search(q)
-                case EnumQueryType.getAll:
-                    r = col.get_all(q)
-                case EnumQueryType.conformToTemplate:
-                    r = col.conform_to_template(q)
-                case EnumQueryType.renameField:
-                    r = col.rename_field(q)
-                case EnumQueryType.count:
-                    r = col.count(q)
-                case EnumQueryType.clear:
-                    r = col.clear(q)
-                case EnumQueryType.clearAdd:
-                    r = col.clear_add(q)
-            # must_affect_at_least_oneの判定。
-            if q.type in (
-                    EnumQueryType.add,
-                    EnumQueryType.update,
-                    EnumQueryType.updateOne,
-                    EnumQueryType.delete,
-                    EnumQueryType.deleteOne,
-                    EnumQueryType.conformToTemplate,
-                    EnumQueryType.renameField,
-                    EnumQueryType.clear,
-                    EnumQueryType.clearAdd,
-            ):
-                if q.must_affect_at_least_one and r.update_count == 0:
-                    return QueryResult(
-                        is_success=False,
-                        type_=q.type,
-                        result=[],
-                        db_length=len(col.raw),
-                        update_count=0,
-                        hit_count=r.hit_count,
-                        error_message="No data matched the condition (mustAffectAtLeastOne=True)"
-                    )
-            return r
-        except Exception as e:
-            print(f"{self.class_name},execute_query: {e}")
-            return QueryResult(
-                is_success=False,
-                type_=q.type,
-                result=[],
-                db_length=len(col.raw),
-                update_count=-1,
-                hit_count=-1,
-                error_message=str(e)
-            )
+        with self._lock:  # 単体クエリもここで排他
+            # パーミッションのチェック
+            if not UtilQuery.check_permissions(q=q, collection_permissions=collection_permissions):
+                return QueryResult(
+                    is_success=False,
+                    type_=q.type,
+                    result=[],
+                    db_length=-1,
+                    update_count=0,
+                    hit_count=0,
+                    error_message="Operation not permitted."
+                )
+            col = self.collection(q.target)
+            try:
+                match q.type:
+                    case EnumQueryType.add:
+                        r = col.add_all(q)
+                    case EnumQueryType.update:
+                        r = col.update(q, is_single_target=False)
+                    case EnumQueryType.updateOne:
+                        r = col.update(q, is_single_target=True)
+                    case EnumQueryType.delete:
+                        r = col.delete(q)
+                    case EnumQueryType.deleteOne:
+                        r = col.delete_one(q)
+                    case EnumQueryType.search:
+                        r = col.search(q)
+                    case EnumQueryType.getAll:
+                        r = col.get_all(q)
+                    case EnumQueryType.conformToTemplate:
+                        r = col.conform_to_template(q)
+                    case EnumQueryType.renameField:
+                        r = col.rename_field(q)
+                    case EnumQueryType.count:
+                        r = col.count(q)
+                    case EnumQueryType.clear:
+                        r = col.clear(q)
+                    case EnumQueryType.clearAdd:
+                        r = col.clear_add(q)
+                # must_affect_at_least_oneの判定。
+                if q.type in (
+                        EnumQueryType.add,
+                        EnumQueryType.update,
+                        EnumQueryType.updateOne,
+                        EnumQueryType.delete,
+                        EnumQueryType.deleteOne,
+                        EnumQueryType.conformToTemplate,
+                        EnumQueryType.renameField,
+                        EnumQueryType.clear,
+                        EnumQueryType.clearAdd,
+                ):
+                    if q.must_affect_at_least_one and r.update_count == 0:
+                        return QueryResult(
+                            is_success=False,
+                            type_=q.type,
+                            result=[],
+                            db_length=len(col.raw),
+                            update_count=0,
+                            hit_count=r.hit_count,
+                            error_message="No data matched the condition (mustAffectAtLeastOne=True)"
+                        )
+                return r
+            except Exception as e:
+                print(f"{self.class_name},execute_query: {e}")
+                return QueryResult(
+                    is_success=False,
+                    type_=q.type,
+                    result=[],
+                    db_length=len(col.raw),
+                    update_count=-1,
+                    hit_count=-1,
+                    error_message=str(e)
+                )
 
     def execute_transaction_query(self, q: TransactionQuery,
                                   collection_permissions: Optional[
                                       Dict[str, Permission]] = None) -> TransactionQueryResult:
-        results: List[QueryResult] = []
-        try:
-            buff: Dict[str, Dict[str, Any]] = {}
-            for i in q.queries:
-                if i.target not in buff:
-                    buff[i.target] = self.collection_to_dict(i.target)
-                    self.collection(i.target).change_transaction_mode(True)
+        with self._lock:  # トランザクション全体で排他
+            results: List[QueryResult] = []
             try:
+                buff: Dict[str, Dict[str, Any]] = {}
                 for i in q.queries:
-                    results.append(self.execute_query(i, collection_permissions=collection_permissions))
-            except Exception:
-                for key, val in buff.items():
-                    self.collection_from_dict_keep_listener(key, val)
-                    self.collection(key).change_transaction_mode(False)
-                print(f"{self.class_name},execute_transaction_query: Transaction failed")
-                return TransactionQueryResult(is_success=False, results=[], error_message="Transaction failed")
+                    if i.target not in buff:
+                        buff[i.target] = self.collection_to_dict(i.target)
+                        self.collection(i.target).change_transaction_mode(True)
+                try:
+                    for i in q.queries:
+                        results.append(self.execute_query(i, collection_permissions=collection_permissions))
+                except Exception:
+                    for key, val in buff.items():
+                        self.collection_from_dict_keep_listener(key, val)
+                        self.collection(key).change_transaction_mode(False)
+                    print(f"{self.class_name},execute_transaction_query: Transaction failed")
+                    return TransactionQueryResult(is_success=False, results=[], error_message="Transaction failed")
 
-            # rollback if any query failed
-            if any(not r.is_success for r in results):
-                for key, val in buff.items():
-                    self.collection_from_dict_keep_listener(key, val)
-                    self.collection(key).change_transaction_mode(False)
-                print(f"{self.class_name},execute_transaction_query: Transaction failed")
-                return TransactionQueryResult(is_success=False, results=[], error_message="Transaction failed")
+                # rollback if any query failed
+                if any(not r.is_success for r in results):
+                    for key, val in buff.items():
+                        self.collection_from_dict_keep_listener(key, val)
+                        self.collection(key).change_transaction_mode(False)
+                    print(f"{self.class_name},execute_transaction_query: Transaction failed")
+                    return TransactionQueryResult(is_success=False, results=[], error_message="Transaction failed")
 
-            # commit: notify listeners
-            for key in buff.keys():
-                col = self.collection(key)
-                need_callback = getattr(col, "run_notify_listeners_in_transaction", False)
-                col.change_transaction_mode(False)
-                if need_callback:
-                    col.notify_listeners()
-            return TransactionQueryResult(is_success=True, results=results)
-        except Exception as e:
-            print(f"{self.class_name},execute_transaction_query: {e}")
-            return TransactionQueryResult(is_success=False, results=[], error_message="Unexpected Error")
+                # commit: notify listeners
+                for key in buff.keys():
+                    col = self.collection(key)
+                    need_callback = getattr(col, "run_notify_listeners_in_transaction", False)
+                    col.change_transaction_mode(False)
+                    if need_callback:
+                        col.notify_listeners()
+                return TransactionQueryResult(is_success=True, results=results)
+            except Exception as e:
+                print(f"{self.class_name},execute_transaction_query: {e}")
+                return TransactionQueryResult(is_success=False, results=[], error_message="Unexpected Error")

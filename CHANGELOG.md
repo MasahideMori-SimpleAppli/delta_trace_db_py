@@ -1,3 +1,8 @@
+## 0.0.30
+
+* Updated README.
+* Some methods related to query execution are now thread-safe.
+
 ## 0.0.29
 
 * The order of arguments in RawQueryBuilder's add has been corrected to align with other functions.

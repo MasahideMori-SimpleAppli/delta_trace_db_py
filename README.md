@@ -30,19 +30,19 @@ Please note that speeds also depend on the amount of data, so if you have a lot 
 ```text
 tests/test_speed.py speed test for 100000 records
 start add
-end add: 348 ms
+end add: 340 ms
 start getAll (with object convert)
-end getAll: 672 ms
+end getAll: 655 ms
 returnsLength: 100000
 start save (with json string convert)
-end save: 476 ms
+end save: 467 ms
 start load (with json string convert)
-end load: 581 ms
+end load: 555 ms
 start search (with object convert)
-end search: 878 ms
+end search: 865 ms
 returnsLength: 100000
 start search paging, half limit pre search (with object convert)
-end search paging: 430 ms
+end search paging: 425 ms
 returnsLength: 50000
 start update at half index and last index object
 end update: 97 ms
@@ -51,13 +51,13 @@ end updateOne: 31 ms
 start conformToTemplate
 end conformToTemplate: 81 ms
 start delete half object (with object convert)
-end delete: 560 ms
+end delete: 550 ms
 returnsLength: 50000
 start deleteOne for last object (with object convert)
-end deleteOne: 23 ms
+end deleteOne: 22 ms
 returnsLength: 1
 start add with serialKey
-end add with serialKey: 98 ms
+end add with serialKey: 100 ms
 addedCount:100000
 ```
 
@@ -65,6 +65,18 @@ addedCount:100000
 
 It is possible to speed up the database, but this is a low priority, so I think that improving
 usability and creating peripheral tools will take priority.
+
+## Notes
+
+This package is primarily designed for single-threaded operation.  
+However, unlike the Dart version, the DeltaTraceDatabase class's execute_query_object, execute_query,  
+and execute_transaction_query methods internally acquire an RLock, making these query execution methods safe to call  
+from multiple threads.  
+
+Note that other classes and utility functions are not thread-safe, so caution is required if they are used concurrently.  
+Additionally, for parallel processing that does not share memory (e.g., across processes), message passing or similar 
+mechanisms are required, just like in the Dart version.  
+
 
 ## Support
 
