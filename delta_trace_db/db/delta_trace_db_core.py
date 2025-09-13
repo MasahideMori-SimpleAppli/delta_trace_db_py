@@ -17,7 +17,7 @@ from delta_trace_db.query.util_query import UtilQuery
 
 class DeltaTraceDatabase(CloneableFile):
     class_name = "DeltaTraceDatabase"
-    version = "9.post2"
+    version = "10"
 
     def __init__(self):
         super().__init__()
@@ -118,6 +118,7 @@ class DeltaTraceDatabase(CloneableFile):
             if not UtilQuery.check_permissions(q=q, collection_permissions=collection_permissions):
                 return QueryResult(
                     is_success=False,
+                    target=q.target,
                     type_=q.type,
                     result=[],
                     db_length=-1,
@@ -167,6 +168,7 @@ class DeltaTraceDatabase(CloneableFile):
                     if q.must_affect_at_least_one and r.update_count == 0:
                         return QueryResult(
                             is_success=False,
+                            target=q.target,
                             type_=q.type,
                             result=[],
                             db_length=len(col.raw),
@@ -179,6 +181,7 @@ class DeltaTraceDatabase(CloneableFile):
                 print(f"{self.class_name},execute_query: {e}")
                 return QueryResult(
                     is_success=False,
+                    target=q.target,
                     type_=q.type,
                     result=[],
                     db_length=len(col.raw),

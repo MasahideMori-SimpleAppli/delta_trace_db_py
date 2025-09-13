@@ -7,11 +7,12 @@ from delta_trace_db.query.query_execution_result import QueryExecutionResult
 
 class QueryResult(QueryExecutionResult):
     class_name: str = "QueryResult"
-    version: str = "4"
+    version: str = "5"
 
     def __init__(
         self,
         is_success: bool,
+        target: str,
         type_: EnumQueryType,
         result: List[Dict[str, Any]],
         db_length: int,
@@ -20,6 +21,7 @@ class QueryResult(QueryExecutionResult):
         error_message: str | None = None,
     ):
         super().__init__(is_success=is_success)
+        self.target: str = target
         self.type: EnumQueryType = type_
         self.result: List[Dict[str, Any]] = result
         self.db_length: int = db_length
@@ -31,6 +33,7 @@ class QueryResult(QueryExecutionResult):
     def from_dict(cls, src: Dict[str, Any]) -> "QueryResult":
         return cls(
             is_success=src["isSuccess"],
+            target=src.get("target", ""),
             type_=EnumQueryType[src["type"]],
             result=list(src["result"]),
             db_length=src["dbLength"],
@@ -50,6 +53,7 @@ class QueryResult(QueryExecutionResult):
             "className": self.class_name,
             "version": self.version,
             "isSuccess": self.is_success,
+            "target": self.target,
             "type": self.type.name,
             "result": UtilCopy.jsonable_deep_copy(self.result),
             "dbLength": self.db_length,

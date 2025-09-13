@@ -1,3 +1,7 @@
+## 0.0.31
+
+* The QueryResult class now has a target parameter, which is set to the target at the time the query was issued, making debugging a bit easier.
+
 ## 0.0.30.post1
 
 * To improve data consistency when saving, RLock has been extended to the entire DeltaTraceDatabase, excluding ineffective methods such as raw.
