@@ -25,7 +25,7 @@ class Permission(CloneableFile):
         for i in m_allows:
             enum_val = EnumQueryType[i]
             if enum_val is None:
-                raise ValueError(f"Invalid EnumQueryType: {i}")
+                raise ValueError("Invalid EnumQueryType")
             allows.append(enum_val)
         return cls(allows)
 

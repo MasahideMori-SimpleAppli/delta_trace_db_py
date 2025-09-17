@@ -1,22 +1,26 @@
 # coding: utf-8
 import functools
-from typing import Any, Callable, Dict, List, Set
+from typing import Any, Callable, Dict, List, Set, Optional
 from file_state_manager.cloneable_file import CloneableFile
 from delta_trace_db.db.util_copy import UtilCopy
 from delta_trace_db.query.nodes.query_node import QueryNode
 from delta_trace_db.query.query import Query
 from delta_trace_db.query.query_result import QueryResult
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class Collection(CloneableFile):
     class_name = "Collection"
-    version = "11"
+    version = "12"
 
     def __init__(self):
         super().__init__()
         self._data: List[Dict[str, Any]] = []
         self._serial_num: int = 0
         self.listeners: Set[Callable[[], None]] = set()
+        self.named_listeners: Dict[str, Callable[[], None]] = {}
         self._is_transaction_mode: bool = False
         self.run_notify_listeners_in_transaction: bool = False
 
@@ -50,16 +54,31 @@ class Collection(CloneableFile):
     def length(self) -> int:
         return len(self._data)
 
-    def add_listener(self, cb: Callable[[], None]):
-        self.listeners.add(cb)
+    def add_listener(self, cb: Callable[[], None], name: Optional[str] = None):
+        if name is None:
+            self.listeners.add(cb)
+        else:
+            self.named_listeners[name] = cb
 
-    def remove_listener(self, cb: Callable[[], None]):
-        self.listeners.discard(cb)
+    def remove_listener(self, cb: Callable[[], None], name: Optional[str] = None):
+        if name is None:
+            self.listeners.discard(cb)
+        else:
+            self.named_listeners.pop(name, None)
 
     def notify_listeners(self):
         if not self._is_transaction_mode:
             for cb in self.listeners:
-                cb()
+                try:
+                    cb()
+                except Exception:
+                    _logger.error("Callback in listeners failed", exc_info=True)
+
+            for name, named_cb in self.named_listeners.items():
+                try:
+                    named_cb()
+                except Exception:
+                    _logger.error("Callback in namedListeners failed", exc_info=True)
         else:
             self.run_notify_listeners_in_transaction = True
 
@@ -81,7 +100,7 @@ class Collection(CloneableFile):
                         db_length=len(self._data),
                         update_count=0,
                         hit_count=0,
-                        error_message=f'The target serialKey does not exist. serialKey:{q.serial_key}',
+                        error_message='The target serialKey does not exist',
                     )
 
             for item in add_data:
@@ -222,10 +241,10 @@ class Collection(CloneableFile):
         for item in self._data:
             if q.rename_before not in item:
                 return QueryResult(False, q.target, q.type, [], len(self._data), 0, 0,
-                                   f'The target key does not exist. key:{q.rename_before}')
+                                   'The renameBefore key does not exist')
             if q.rename_after in item:
                 return QueryResult(False, q.target, q.type, [], len(self._data), 0, 0,
-                                   f'An existing key was specified as the new key. key:{q.rename_after}')
+                                   'An existing key was specified as the new key')
         update_count = 0
         for item in self._data:
             item[q.rename_after] = item[q.rename_before]
@@ -267,7 +286,7 @@ class Collection(CloneableFile):
                         db_length=len(self._data),
                         update_count=0,
                         hit_count=0,
-                        error_message=f'The target serialKey does not exist. serialKey:{q.serial_key}',
+                        error_message='The target serialKey does not exist',
                     )
 
             for item in add_data:

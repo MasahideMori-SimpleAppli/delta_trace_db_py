@@ -32,4 +32,4 @@ class AbstractSort(ABC):
         elif class_name == MultiSort.class_name:
             return MultiSort.from_dict(src)
         else:
-            raise ValueError(f"Unknown sort class: {class_name}")
+            raise ValueError("Unknown sort class")

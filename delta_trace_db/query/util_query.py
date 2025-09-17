@@ -33,7 +33,7 @@ class UtilQuery:
             elif src.get("className") == "TransactionQuery":
                 return TransactionQuery.from_dict(src)
             else:
-                raise ValueError(f"Unsupported query class: {src.get('className')}")
+                raise ValueError("Unsupported query class")
         except Exception:
             raise ValueError("Unsupported object")
 

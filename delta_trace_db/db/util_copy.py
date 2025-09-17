@@ -1,6 +1,7 @@
 # coding: utf-8
 from typing import Any
 
+
 class UtilCopy:
     _max_depth = 100  # 安全な再帰深度上限
 
@@ -18,13 +19,13 @@ class UtilCopy:
             コピーされたオブジェクト
         """
         if depth > UtilCopy._max_depth:
-            raise ValueError(f'Exceeded max allowed nesting depth ({UtilCopy._max_depth})')
+            raise ValueError('Exceeded max allowed nesting depth')
 
         if isinstance(value, dict):
-            return {k: UtilCopy.jsonable_deep_copy(v, depth=depth+1) for k, v in value.items()}
+            return {k: UtilCopy.jsonable_deep_copy(v, depth=depth + 1) for k, v in value.items()}
         elif isinstance(value, list):
-            return [UtilCopy.jsonable_deep_copy(v, depth=depth+1) for v in value]
+            return [UtilCopy.jsonable_deep_copy(v, depth=depth + 1) for v in value]
         elif isinstance(value, (str, int, float, bool)) or value is None:
             return value
         else:
-            raise ValueError(f'Unsupported type for JSON deep copy: {type(value)}')
+            raise ValueError('Unsupported type for JSON deep copy')

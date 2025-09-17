@@ -14,7 +14,7 @@ class SingleSort(AbstractSort):
     """
 
     class_name = "SingleSort"
-    version = "3"
+    version = "4"
 
     def __init__(self, field: str, reversed_: bool = False, v_type: EnumValueType = EnumValueType.auto_):
         self.field = field
@@ -51,8 +51,8 @@ class SingleSort(AbstractSort):
                     try:
                         return datetime.fromisoformat(value)
                     except ValueError:
-                        raise Exception(f"Cannot convert {value} to datetime")
-                raise Exception(f"Cannot convert {value} to datetime")
+                        raise Exception("Cannot convert value to datetime")
+                raise Exception("Cannot convert value to datetime")
             case EnumValueType.int_:
                 if isinstance(value, int):
                     return value
@@ -62,8 +62,8 @@ class SingleSort(AbstractSort):
                     try:
                         return int(value)
                     except ValueError:
-                        raise Exception(f"Cannot convert {value} to int")
-                raise Exception(f"Cannot convert {value} to int")
+                        raise Exception("Cannot convert value to int")
+                raise Exception("Cannot convert value to int")
             case EnumValueType.floatStrict_:
                 if isinstance(value, float):
                     return value
@@ -73,8 +73,8 @@ class SingleSort(AbstractSort):
                     try:
                         return float(value)
                     except ValueError:
-                        raise Exception(f"Cannot convert {value} to float")
-                raise Exception(f"Cannot convert {value} to float")
+                        raise Exception("Cannot convert value to float")
+                raise Exception("Cannot convert value to float")
             case EnumValueType.floatEpsilon12_:
                 if isinstance(value, (int, float)):
                     return float(value)
@@ -82,8 +82,8 @@ class SingleSort(AbstractSort):
                     try:
                         return float(value)
                     except ValueError:
-                        raise Exception(f"Cannot convert {value} to float (epsilon)")
-                raise Exception(f"Cannot convert {value} to float (epsilon)")
+                        raise Exception("Cannot convert value to float (epsilon)")
+                raise Exception("Cannot convert value to float (epsilon)")
             case EnumValueType.boolean_:
                 if isinstance(value, bool):
                     return value
@@ -95,13 +95,13 @@ class SingleSort(AbstractSort):
                         return True
                     if lower in ['false', '0', 'no', 'n']:
                         return False
-                raise Exception(f"Cannot convert {value} to bool")
+                raise Exception("Cannot convert value to bool")
             case EnumValueType.string_:
                 return str(value)
             case EnumValueType.auto_:
                 return value
             case _:
-                raise Exception(f"Unknown type: {self.v_type}")
+                raise Exception("Unknown type")
 
     def get_comparator(self) -> Callable[[Dict[str, Any], Dict[str, Any]], int]:
         def comparator(a: Dict[str, Any], b: Dict[str, Any]) -> int:
@@ -116,6 +116,7 @@ class SingleSort(AbstractSort):
             if b_value is None:
                 return 1 if self.reversed else -1
             # 比較用の計算。
+            result = 0
             match self.v_type:
                 case EnumValueType.floatEpsilon12_:
                     diff = float(a_value) - float(b_value)
@@ -131,11 +132,11 @@ class SingleSort(AbstractSort):
                     elif isinstance(a_value, (int, float, str)) and isinstance(b_value, (int, float, str)):
                         if type(a_value) != type(b_value):
                             raise Exception(
-                                f'Incompatible types: {a_value} ({type(a_value).__name__}) vs {b_value} ({type(b_value).__name__})')
+                                'Incompatible types')
                         result = (a_value > b_value) - (a_value < b_value)
                     else:
                         raise Exception(
-                            f'Field "{self.field}" not comparable: {a_value} ({type(a_value).__name__}), {b_value} ({type(b_value).__name__})')
+                            'Field not comparable')
             return -result if self.reversed else result
 
         return comparator
