@@ -4,7 +4,9 @@ from typing import Any, Dict, List, Optional
 from delta_trace_db.query.enum_query_type import EnumQueryType
 from delta_trace_db.query.query_builder import QueryBuilder
 from delta_trace_db.query.query import Query
+from delta_trace_db.query.sort.abstract_sort import AbstractSort
 from delta_trace_db.query.nodes.query_node import QueryNode
+from delta_trace_db.query.cause.cause import Cause
 
 
 class RawQueryBuilder(QueryBuilder):
@@ -13,28 +15,27 @@ class RawQueryBuilder(QueryBuilder):
             target: str,
             type_: EnumQueryType,
             raw_add_data: Optional[List[Dict[str, Any]]] = None,
+            override_data: Optional[Dict[str, Any]] = None,
             raw_template: Optional[Dict[str, Any]] = None,
             query_node: Optional[QueryNode] = None,
-            override_data: Optional[Dict[str, Any]] = None,
-            return_data: Optional[bool] = None,
-            sort_obj: Optional[Any] = None,
+            sort_obj: Optional[AbstractSort] = None,
             offset: Optional[int] = None,
-            start_after: Optional[Any] = None,
-            end_before: Optional[Any] = None,
+            start_after: Optional[Dict[str, Any]] = None,
+            end_before: Optional[Dict[str, Any]] = None,
             rename_before: Optional[str] = None,
             rename_after: Optional[str] = None,
             limit: Optional[int] = None,
+            return_data: Optional[bool] = None,
             must_affect_at_least_one: bool = True,
             serial_key: Optional[str] = None,
             reset_serial: bool = False,
-            cause: Optional[Any] = None,
+            cause: Optional[Cause] = None,
     ):
         super().__init__(
             target=target,
             type_=type_,
-            query_node=query_node,
             override_data=override_data,
-            return_data=return_data,
+            query_node=query_node,
             sort_obj=sort_obj,
             offset=offset,
             start_after=start_after,
@@ -42,6 +43,7 @@ class RawQueryBuilder(QueryBuilder):
             rename_before=rename_before,
             rename_after=rename_after,
             limit=limit,
+            return_data=return_data,
             must_affect_at_least_one=must_affect_at_least_one,
             serial_key=serial_key,
             reset_serial=reset_serial,
@@ -55,7 +57,7 @@ class RawQueryBuilder(QueryBuilder):
             return_data: bool = False,
             must_affect_at_least_one: bool = True,
             serial_key: Optional[str] = None,
-            cause: Optional[Any] = None):
+            cause: Optional[Cause] = None):
         return cls(target=target, type_=EnumQueryType.add, raw_add_data=raw_add_data,
                    return_data=return_data,
                    must_affect_at_least_one=must_affect_at_least_one,
@@ -69,9 +71,9 @@ class RawQueryBuilder(QueryBuilder):
             query_node: QueryNode,
             override_data: Optional[Dict[str, Any]],
             return_data: bool = False,
-            sort_obj: Optional[Any] = None,
+            sort_obj: Optional[AbstractSort] = None,
             must_affect_at_least_one: bool = True,
-            cause: Optional[Any] = None
+            cause: Optional[Cause] = None
     ):
         return cls(
             target=target,
@@ -92,7 +94,7 @@ class RawQueryBuilder(QueryBuilder):
             override_data: Optional[Dict[str, Any]],
             return_data: bool = False,
             must_affect_at_least_one: bool = True,
-            cause: Optional[Any] = None
+            cause: Optional[Cause] = None
     ):
         return cls(
             target=target,
@@ -110,9 +112,9 @@ class RawQueryBuilder(QueryBuilder):
             target: str,
             query_node: QueryNode,
             return_data: bool = False,
-            sort_obj: Optional[Any] = None,
+            sort_obj: Optional[AbstractSort] = None,
             must_affect_at_least_one: bool = True,
-            cause: Optional[Any] = None
+            cause: Optional[Cause] = None
     ):
         return cls(
             target=target,
@@ -131,7 +133,7 @@ class RawQueryBuilder(QueryBuilder):
             query_node: QueryNode,
             return_data: bool = False,
             must_affect_at_least_one: bool = True,
-            cause: Optional[Any] = None
+            cause: Optional[Cause] = None
     ):
         return cls(
             target=target,
@@ -147,12 +149,12 @@ class RawQueryBuilder(QueryBuilder):
             cls,
             target: str,
             query_node: QueryNode,
-            sort_obj: Optional[Any] = None,
+            sort_obj: Optional[AbstractSort] = None,
             offset: Optional[int] = None,
-            start_after: Optional[Any] = None,
-            end_before: Optional[Any] = None,
+            start_after: Optional[Dict[str, Any]] = None,
+            end_before: Optional[Dict[str, Any]] = None,
             limit: Optional[int] = None,
-            cause: Optional[Any] = None
+            cause: Optional[Cause] = None
     ):
         return cls(
             target=target,
@@ -167,7 +169,21 @@ class RawQueryBuilder(QueryBuilder):
         )
 
     @classmethod
-    def get_all(cls, target: str, sort_obj: Optional[Any] = None, cause: Optional[Any] = None):
+    def search_one(
+            cls,
+            target: str,
+            query_node: QueryNode,
+            cause: Optional[Cause] = None
+    ):
+        return cls(
+            target=target,
+            type_=EnumQueryType.searchOne,
+            query_node=query_node,
+            cause=cause
+        )
+
+    @classmethod
+    def get_all(cls, target: str, sort_obj: Optional[AbstractSort] = None, cause: Optional[Cause] = None):
         return cls(target=target, type_=EnumQueryType.getAll, sort_obj=sort_obj, cause=cause)
 
     @classmethod
@@ -176,7 +192,7 @@ class RawQueryBuilder(QueryBuilder):
             target: str,
             raw_template: Optional[Dict[str, Any]] = None,
             must_affect_at_least_one: bool = True,
-            cause: Optional[Any] = None
+            cause: Optional[Cause] = None
     ):
         return cls(
             target=target,
@@ -194,7 +210,7 @@ class RawQueryBuilder(QueryBuilder):
             rename_after: str,
             return_data: bool = False,
             must_affect_at_least_one: bool = True,
-            cause: Optional[Any] = None
+            cause: Optional[Cause] = None
     ):
         return cls(
             target=target,
@@ -207,12 +223,12 @@ class RawQueryBuilder(QueryBuilder):
         )
 
     @classmethod
-    def count(cls, target: str, cause: Optional[Any] = None):
+    def count(cls, target: str, cause: Optional[Cause] = None):
         return cls(target=target, type_=EnumQueryType.count, cause=cause)
 
     @classmethod
     def clear(cls, target: str, must_affect_at_least_one: bool = True, reset_serial: bool = False,
-              cause: Optional[Any] = None):
+              cause: Optional[Cause] = None):
         return cls(target=target, type_=EnumQueryType.clear, must_affect_at_least_one=must_affect_at_least_one,
                    reset_serial=reset_serial,
                    cause=cause)
@@ -223,12 +239,20 @@ class RawQueryBuilder(QueryBuilder):
                   must_affect_at_least_one: bool = True,
                   serial_key: Optional[str] = None,
                   reset_serial: bool = False,
-                  cause: Optional[Any] = None):
+                  cause: Optional[Cause] = None):
         return cls(target=target, type_=EnumQueryType.clearAdd, raw_add_data=raw_add_data,
                    return_data=return_data,
                    must_affect_at_least_one=must_affect_at_least_one,
                    serial_key=serial_key,
                    reset_serial=reset_serial,
+                   cause=cause)
+
+    @classmethod
+    def remove_collection(cls, target: str,
+                          must_affect_at_least_one: bool = True,
+                          cause: Optional[Cause] = None):
+        return cls(target, EnumQueryType.removeCollection,
+                   must_affect_at_least_one=must_affect_at_least_one,
                    cause=cause)
 
     def build(self) -> Query:

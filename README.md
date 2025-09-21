@@ -30,34 +30,37 @@ Please note that speeds also depend on the amount of data, so if you have a lot 
 ```text
 tests/test_speed.py speed test for 100000 records
 start add
-end add: 343 ms
+end add: 340 ms
 start getAll (with object convert)
-end getAll: 670 ms
+end getAll: 655 ms
 returnsLength: 100000
 start save (with json string convert)
-end save: 479 ms
+end save: 469 ms
 start load (with json string convert)
-end load: 569 ms
+end load: 554 ms
 start search (with object convert)
-end search: 878 ms
+end search: 866 ms
 returnsLength: 100000
 start search paging, half limit pre search (with object convert)
-end search paging: 429 ms
+end search paging: 426 ms
 returnsLength: 50000
+start searchOne, the last index object search (with object convert)
+end searchOne: 38 ms
+returnsLength: 1
 start update at half index and last index object
-end update: 97 ms
+end update: 92 ms
 start updateOne of half index object
-end updateOne: 30 ms
+end updateOne: 17 ms
 start conformToTemplate
-end conformToTemplate: 80 ms
+end conformToTemplate: 79 ms
 start delete half object (with object convert)
-end delete: 558 ms
+end delete: 553 ms
 returnsLength: 50000
 start deleteOne for last object (with object convert)
 end deleteOne: 22 ms
 returnsLength: 1
 start add with serialKey
-end add with serialKey: 99 ms
+end add with serialKey: 100 ms
 addedCount:100000
 ```
 

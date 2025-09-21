@@ -1,12 +1,12 @@
 # coding: utf-8
 from typing import List, Dict, Optional, Any
 
-from .cause.cause import Cause
-from .enum_query_type import EnumQueryType
-from .query import Query
+from delta_trace_db.query.cause.cause import Cause
+from delta_trace_db.query.enum_query_type import EnumQueryType
+from delta_trace_db.query.query import Query
 from file_state_manager.cloneable_file import CloneableFile
 from delta_trace_db.query.nodes.query_node import QueryNode
-from .sort.abstract_sort import AbstractSort
+from delta_trace_db.query.sort.abstract_sort import AbstractSort
 
 
 class QueryBuilder:
@@ -137,6 +137,14 @@ class QueryBuilder:
                    cause=cause)
 
     @classmethod
+    def search_one(cls, target: str,
+                   query_node: QueryNode,
+                   cause: Optional[Cause] = None):
+        return cls(target, EnumQueryType.searchOne,
+                   query_node=query_node,
+                   cause=cause)
+
+    @classmethod
     def get_all(cls, target: str,
                 sort_obj: Optional[AbstractSort] = None,
                 cause: Optional[Cause] = None):
@@ -200,9 +208,14 @@ class QueryBuilder:
                    reset_serial=reset_serial,
                    cause=cause)
 
-    # --------------------------
-    # build() : Query インスタンスを返す
-    # --------------------------
+    @classmethod
+    def remove_collection(cls, target: str,
+                          must_affect_at_least_one: bool = True,
+                          cause: Optional[Cause] = None):
+        return cls(target, EnumQueryType.removeCollection,
+                   must_affect_at_least_one=must_affect_at_least_one,
+                   cause=cause)
+
     def build(self) -> Query:
         m_data: Optional[List[Dict[str, Any]]] = None
         if self.add_data is not None:

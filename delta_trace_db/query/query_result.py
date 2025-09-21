@@ -7,7 +7,7 @@ from delta_trace_db.query.query_execution_result import QueryExecutionResult
 
 class QueryResult(QueryExecutionResult):
     class_name: str = "QueryResult"
-    version: str = "5"
+    version: str = "6"
 
     def __init__(
         self,

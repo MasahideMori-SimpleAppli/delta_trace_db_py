@@ -188,11 +188,24 @@ def test_speed_crud():
     print(f"end search paging: {(dt2 - dt1).total_seconds() * 1000:.0f} ms")
     print(f"returnsLength: {len(r2_paging.result)}")
 
+    # search one
+    q2_one = QueryBuilder.search_one(
+        target='users',
+        query_node=FieldEquals('age', records_count - 1),
+    ).build()
+    print("start searchOne, the last index object search (with object convert)")
+    dt1 = datetime.now()
+    r2_one: QueryResult = db.execute_query(q2_one)
+    _ = r2_one.convert(User.from_dict)
+    dt2 = datetime.now()
+    print(f"end searchOne: {(dt2 - dt1).total_seconds() * 1000:.0f} ms")
+    print(f"returnsLength: {len(r2_one.result)}")
+
     # update
     q3 = QueryBuilder.update(
         target='users',
         query_node=OrNode([
-            FieldEquals('name', f'sample{records_count // 2}'),
+            FieldEquals('name', f'sample{(records_count // 2) -1}'),
             FieldEquals('name', f'sample{records_count - 1}')
         ]),
         override_data={'age': records_count + 1},
@@ -208,7 +221,7 @@ def test_speed_crud():
     # updateOne
     q4 = QueryBuilder.update_one(
         target='users',
-        query_node=OrNode([FieldEquals('name', f'sample{records_count // 2}')]),
+        query_node=FieldEquals('name', f'sample{(records_count // 2 )-1}'),
         override_data={'age': records_count},
         return_data=False
     ).build()
@@ -239,7 +252,7 @@ def test_speed_crud():
     # delete
     q6 = QueryBuilder.delete(
         target='users',
-        query_node=FieldGreaterThan('age', (records_count // 2) - 1),
+        query_node=FieldGreaterThan('age', (records_count // 2)),
         sort_obj=SingleSort(field='id'),
         return_data=True
     ).build()
@@ -254,7 +267,7 @@ def test_speed_crud():
     # deleteOne
     q7 = QueryBuilder.delete_one(
         target='users',
-        query_node=FieldEquals('age', (records_count // 2) - 1),
+        query_node=FieldEquals('age', (records_count // 2)),
         return_data=True
     ).build()
     print("start deleteOne for last object (with object convert)")

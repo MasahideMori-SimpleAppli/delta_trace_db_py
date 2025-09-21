@@ -1,6 +1,6 @@
 # coding: utf-8
 from threading import RLock
-from typing import Any, Dict, List, Callable, Optional, Set
+from typing import Any, Dict, List, Callable, Optional
 
 from file_state_manager.cloneable_file import CloneableFile
 
@@ -20,7 +20,7 @@ _logger = logging.getLogger(__name__)
 
 class DeltaTraceDatabase(CloneableFile):
     class_name = "DeltaTraceDatabase"
-    version = "11"
+    version = "12"
 
     def __init__(self):
         super().__init__()
@@ -177,6 +177,7 @@ class DeltaTraceDatabase(CloneableFile):
                     hit_count=0,
                     error_message="Operation not permitted."
                 )
+            is_exist_col = q.target in self._collections
             col = self.collection(q.target)
             try:
                 match q.type:
@@ -192,6 +193,8 @@ class DeltaTraceDatabase(CloneableFile):
                         r = col.delete_one(q)
                     case EnumQueryType.search:
                         r = col.search(q)
+                    case EnumQueryType.searchOne:
+                        r = col.search_one(q)
                     case EnumQueryType.getAll:
                         r = col.get_all(q)
                     case EnumQueryType.conformToTemplate:
@@ -204,6 +207,28 @@ class DeltaTraceDatabase(CloneableFile):
                         r = col.clear(q)
                     case EnumQueryType.clearAdd:
                         r = col.clear_add(q)
+                    case EnumQueryType.removeCollection:
+                        if is_exist_col:
+                            r = QueryResult(
+                                is_success=True,
+                                target=q.target,
+                                type_=q.type,
+                                result=[],
+                                db_length=0,
+                                update_count=1,
+                                hit_count=0,
+                                error_message=None)
+                        else:
+                            r = QueryResult(
+                                is_success=True,
+                                target=q.target,
+                                type_=q.type,
+                                result=[],
+                                db_length=0,
+                                update_count=0,
+                                hit_count=0,
+                                error_message=None)
+                        self.remove_collection(name=q.target)
                 # must_affect_at_least_oneの判定。
                 if q.type in (
                         EnumQueryType.add,
@@ -215,6 +240,7 @@ class DeltaTraceDatabase(CloneableFile):
                         EnumQueryType.renameField,
                         EnumQueryType.clear,
                         EnumQueryType.clearAdd,
+                        EnumQueryType.removeCollection
                 ):
                     if q.must_affect_at_least_one and r.update_count == 0:
                         return QueryResult(
@@ -258,6 +284,12 @@ class DeltaTraceDatabase(CloneableFile):
                                   collection_permissions: Optional[
                                       Dict[str, Permission]] = None) -> TransactionQueryResult:
         with self._lock:  # トランザクション全体で排他
+            # 許可されていないクエリが混ざっていないか調査し、混ざっていたら失敗にする。
+            for i in q.queries:
+                if i.type == EnumQueryType.removeCollection:
+                    return TransactionQueryResult(is_success=False, results=[],
+                                                  error_message="The query contains a type that is not permitted to be executed within a transaction.")
+            # トランザクション付き処理を開始。
             results: List[QueryResult] = []
             try:
                 buff: Dict[str, Dict[str, Any]] = {}

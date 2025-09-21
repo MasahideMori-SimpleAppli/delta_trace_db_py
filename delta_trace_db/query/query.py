@@ -9,7 +9,7 @@ from delta_trace_db.db.util_copy import UtilCopy
 
 class Query:
     className: str = "Query"
-    version: str = "5"
+    version: str = "6"
 
     def __init__(
             self,

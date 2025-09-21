@@ -13,7 +13,7 @@ _logger = logging.getLogger(__name__)
 
 class Collection(CloneableFile):
     class_name = "Collection"
-    version = "12"
+    version = "14"
 
     def __init__(self):
         super().__init__()
@@ -219,6 +219,23 @@ class Collection(CloneableFile):
             hit_count=hit_count,
         )
 
+    def search_one(self, q: Query) -> QueryResult:
+        r: List[Dict[str, Any]] = []
+        # 検索
+        for item in self._data:
+            if self._evaluate(item, q.query_node):
+                r.append(item)
+                break
+        return QueryResult(
+            is_success=True,
+            target=q.target,
+            type_=q.type,
+            result=UtilCopy.jsonable_deep_copy(r),
+            db_length=len(self._data),
+            update_count=0,
+            hit_count=len(r),
+        )
+
     def get_all(self, q: Query) -> QueryResult:
         r = UtilCopy.jsonable_deep_copy(self._data)
         if q.sort_obj:
@@ -268,11 +285,6 @@ class Collection(CloneableFile):
         return QueryResult(True, q.target, q.type, [], 0, pre_len, pre_len)
 
     def clear_add(self, q: Query) -> QueryResult:
-        pre_len = len(self._data)
-        self._data.clear()
-        if q.reset_serial:
-            self._serial_num = 0
-        added_items = []
         add_data = UtilCopy.jsonable_deep_copy(q.add_data)
         if q.serial_key is not None:
             # 対象キーの存在チェック
@@ -288,7 +300,12 @@ class Collection(CloneableFile):
                         hit_count=0,
                         error_message='The target serialKey does not exist',
                     )
-
+        pre_len = len(self._data)
+        self._data.clear()
+        if q.reset_serial:
+            self._serial_num = 0
+        added_items = []
+        if q.serial_key is not None:
             for item in add_data:
                 serial_num = self._serial_num
                 item[q.serial_key] = serial_num
