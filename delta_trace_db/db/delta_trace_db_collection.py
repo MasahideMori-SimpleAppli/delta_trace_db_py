@@ -13,7 +13,7 @@ _logger = logging.getLogger(__name__)
 
 class Collection(CloneableFile):
     class_name = "Collection"
-    version = "14"
+    version = "15"
 
     def __init__(self):
         super().__init__()
@@ -128,6 +128,7 @@ class Collection(CloneableFile):
                     if is_single_target:
                         break
             if r:
+                r = self._apply_sort(q=q, pre_r=r)
                 # 要素が空ではないなら通知を発行。
                 self.notify_listeners()
             return QueryResult(True, q.target, q.type, UtilCopy.jsonable_deep_copy(r), len(self._data), len(r), len(r))
@@ -147,6 +148,7 @@ class Collection(CloneableFile):
         if q.return_data:
             deleted_items = [item for item in self._data if self._evaluate(item, q.query_node)]
             self._data = [item for item in self._data if not self._evaluate(item, q.query_node)]
+            deleted_items = self._apply_sort(q=q, pre_r=deleted_items)
             if deleted_items:
                 self.notify_listeners()
             return QueryResult(True, q.target, q.type, UtilCopy.jsonable_deep_copy(deleted_items), len(self._data),
@@ -180,35 +182,7 @@ class Collection(CloneableFile):
                 r.append(item)
         hit_count = len(r)
         # ソートやページングのオプション
-        if q.sort_obj is not None:
-            sorted_list = list(r)
-            sorted_list.sort(key=functools.cmp_to_key(q.sort_obj.get_comparator()))
-            r = sorted_list
-            if q.offset is not None:
-                if q.offset > 0:
-                    r = r[q.offset:]
-            else:
-                if q.start_after is not None:
-                    try:
-                        index = r.index(q.start_after)
-                        if index != -1 and index + 1 < len(r):
-                            r = r[index + 1:]
-                        elif index != -1 and index + 1 >= len(r):
-                            r = []
-                    except ValueError:
-                        pass
-                elif q.end_before is not None:
-                    try:
-                        index = r.index(q.end_before)
-                        if index != -1:
-                            r = r[:index]
-                    except ValueError:
-                        pass
-        if q.limit is not None:
-            if q.offset is None and q.start_after is None and q.end_before is not None:
-                r = r[-q.limit:] if len(r) > q.limit else r
-            else:
-                r = r[:q.limit]
+        r = self._sort_paging_limit(q=q, pre_r=r)
         return QueryResult(
             is_success=True,
             target=q.target,
@@ -218,6 +192,53 @@ class Collection(CloneableFile):
             update_count=0,
             hit_count=hit_count,
         )
+
+    def _sort_paging_limit(self, q: Query, pre_r: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        r = pre_r
+        r = self._apply_sort(q, r)
+        r = self._apply_get_position(q, r)
+        r = self._apply_limit(q, r)
+        return r
+
+    def _apply_sort(self, q: Query, pre_r: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        r = pre_r
+        if q.sort_obj is not None:
+            sorted_list = list(r)
+            sorted_list.sort(key=functools.cmp_to_key(q.sort_obj.get_comparator()))
+            return sorted_list
+        return r
+
+    def _apply_get_position(self, q: Query, pre_r: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        r = pre_r
+        if q.offset is not None:
+            if q.offset > 0:
+                r = r[q.offset:]
+        else:
+            if q.start_after is not None:
+                try:
+                    index = r.index(q.start_after)
+                    if index + 1 < len(r):
+                        r = r[index + 1:]
+                    else:
+                        r = []
+                except ValueError:
+                    pass
+            elif q.end_before is not None:
+                try:
+                    index = r.index(q.end_before)
+                    if index != -1:
+                        r = r[:index]
+                except ValueError:
+                    pass
+        return r
+
+    def _apply_limit(self, q: Query, pre_r: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        r = pre_r
+        if q.limit is None:
+            return  r
+        if q.offset is None and q.start_after is None and q.end_before is not None:
+            return r[-q.limit:] if len(r) > q.limit else r
+        return r[:q.limit]
 
     def search_one(self, q: Query) -> QueryResult:
         r: List[Dict[str, Any]] = []
@@ -238,9 +259,10 @@ class Collection(CloneableFile):
 
     def get_all(self, q: Query) -> QueryResult:
         r = UtilCopy.jsonable_deep_copy(self._data)
-        if q.sort_obj:
-            r.sort(key=q.sort_obj.get_comparator())
-        return QueryResult(True, q.target, q.type, r, len(self._data), 0, len(r))
+        hit_count = len(r)
+        # ソートやページングのオプション
+        r = self._sort_paging_limit(q=q, pre_r=r)
+        return QueryResult(True, q.target, q.type, r, len(self._data), 0, hit_count)
 
     def conform_to_template(self, q: Query) -> QueryResult:
         for item in self._data:

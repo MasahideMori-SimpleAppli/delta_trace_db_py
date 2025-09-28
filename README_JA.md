@@ -24,37 +24,37 @@ testフォルダ内のtest_speed.pyを使用して、実際の環境でテスト
 ```text
 tests/test_speed.py speed test for 100000 records
 start add
-end add: 340 ms
+end add: 342 ms
 start getAll (with object convert)
-end getAll: 655 ms
+end getAll: 663 ms
 returnsLength: 100000
 start save (with json string convert)
 end save: 469 ms
 start load (with json string convert)
-end load: 554 ms
+end load: 561 ms
 start search (with object convert)
-end search: 866 ms
+end search: 868 ms
 returnsLength: 100000
 start search paging, half limit pre search (with object convert)
-end search paging: 426 ms
+end search paging: 424 ms
 returnsLength: 50000
 start searchOne, the last index object search (with object convert)
-end searchOne: 38 ms
+end searchOne: 39 ms
 returnsLength: 1
 start update at half index and last index object
-end update: 92 ms
+end update: 90 ms
 start updateOne of half index object
-end updateOne: 17 ms
+end updateOne: 16 ms
 start conformToTemplate
-end conformToTemplate: 79 ms
+end conformToTemplate: 81 ms
 start delete half object (with object convert)
-end delete: 553 ms
+end delete: 628 ms
 returnsLength: 50000
 start deleteOne for last object (with object convert)
 end deleteOne: 22 ms
 returnsLength: 1
 start add with serialKey
-end add with serialKey: 100 ms
+end add with serialKey: 99 ms
 addedCount:100000
 ```
 

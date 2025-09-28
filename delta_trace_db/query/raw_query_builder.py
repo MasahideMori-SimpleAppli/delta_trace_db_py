@@ -183,8 +183,12 @@ class RawQueryBuilder(QueryBuilder):
         )
 
     @classmethod
-    def get_all(cls, target: str, sort_obj: Optional[AbstractSort] = None, cause: Optional[Cause] = None):
-        return cls(target=target, type_=EnumQueryType.getAll, sort_obj=sort_obj, cause=cause)
+    def get_all(cls, target: str, sort_obj: Optional[AbstractSort] = None, offset: Optional[int] = None,
+                start_after: Optional[Dict[str, Any]] = None,
+                end_before: Optional[Dict[str, Any]] = None,
+                limit: Optional[int] = None, cause: Optional[Cause] = None):
+        return cls(target=target, type_=EnumQueryType.getAll, sort_obj=sort_obj, offset=offset, start_after=start_after,
+                   end_before=end_before, limit=limit, cause=cause)
 
     @classmethod
     def conform_to_template(
