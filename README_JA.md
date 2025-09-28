@@ -11,6 +11,9 @@
 サーバーサイドコードの簡単な例を以下に示します。  
 [サーバーサイドの例](https://github.com/MasahideMori-SimpleAppli/delta_trace_db_py_server_example)  
 
+また、DBの内容を手動で編集するためのエディタもオープンソースで開発中です。  
+[DeltaTraceStudio](https://github.com/MasahideMori-SimpleAppli/delta_trace_studio)  
+
 ## 速度
 
 このパッケージはインメモリデータベースなので、基本的に高速です。  

@@ -12,6 +12,9 @@ if there is a namespace conflict with a standard function, but the usage is the 
 Here's a simple example of server-side code:  
 [ServerSide Example](https://github.com/MasahideMori-SimpleAppli/delta_trace_db_py_server_example)
 
+I am also developing an open source editor for manually editing the DB contents:  
+[DeltaTraceStudio](https://github.com/MasahideMori-SimpleAppli/delta_trace_studio)  
+
 ## Speed
 
 This package is an in-memory database, so it is generally fast.  
