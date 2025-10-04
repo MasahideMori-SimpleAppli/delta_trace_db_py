@@ -127,8 +127,8 @@ class Collection(CloneableFile):
                     r.append(item)
                     if is_single_target:
                         break
+            r = self._apply_sort(q=q, pre_r=r)
             if r:
-                r = self._apply_sort(q=q, pre_r=r)
                 # 要素が空ではないなら通知を発行。
                 self.notify_listeners()
             return QueryResult(True, q.target, q.type, UtilCopy.jsonable_deep_copy(r), len(self._data), len(r), len(r))
