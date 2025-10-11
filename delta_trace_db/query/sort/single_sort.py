@@ -134,6 +134,8 @@ class SingleSort(AbstractSort):
                             raise Exception(
                                 'Incompatible types')
                         result = (a_value > b_value) - (a_value < b_value)
+                    elif isinstance(a_value, datetime) and isinstance(b_value, datetime):
+                        result = (a_value > b_value) - (a_value < b_value)
                     else:
                         raise Exception(
                             'Field not comparable')

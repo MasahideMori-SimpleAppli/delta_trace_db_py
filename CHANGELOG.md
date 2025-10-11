@@ -1,3 +1,7 @@
+## 0.0.34.post1
+
+* Fixed a bug in the SingleSort object that caused sorting to fail when v_type was EnumValueType.datetime_.
+
 ## 0.0.34
 
 * In search queries, sortObj is no longer required when using offset, startAfter, or endBefore. If not specified, the queries will be processed in the order they were added to the database.
