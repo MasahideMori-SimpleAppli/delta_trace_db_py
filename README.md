@@ -7,7 +7,7 @@ Python implementation of DeltaTraceDB.
 Here's a simple example of server-side code:  
 [ServerSide Example](https://github.com/MasahideMori-SimpleAppli/delta_trace_db_py_server_example)  
 
-If you want to construct queries directly, please refer to the [Dart version](https://github.com/MasahideMori-SimpleAppli/delta_trace_db).
+If you want to construct queries directly, please refer to the [Dart version](https://github.com/MasahideMori-SimpleAppli/delta_trace_db).  
 There are some differences, such as arguments and functions being in snake case,  
 and an underscore being added after the variable name if the namespace conflicts with a standard function,  
 but the usage is the same.
