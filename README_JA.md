@@ -5,11 +5,11 @@
 
 ## 使い方
 
-[Dart版](https://github.com/MasahideMori-SimpleAppli/delta_trace_db)を参照してください。  
-引数がデフォルトでスネークケースになることや、標準関数と名前空間が競合する場合は変数名の後にアンダースコアが付加されるなど、いくつか違いはありますが、使い方は同じです。  
-
 サーバーサイドコードの簡単な例を以下に示します。  
 [サーバーサイドの例](https://github.com/MasahideMori-SimpleAppli/delta_trace_db_py_server_example)  
+
+直接クエリを組み立てたい場合などは、[Dart版](https://github.com/MasahideMori-SimpleAppli/delta_trace_db)を参照してください。  
+引数や関数がスネークケースになったり、標準関数と名前空間が競合する場合は変数名の後にアンダースコアが付加されるなど、いくつか違いはありますが、使い方は同じです。  
 
 また、DBの内容を手動で編集するためのエディタもオープンソースで開発中です。  
 [DeltaTraceStudio](https://github.com/MasahideMori-SimpleAppli/delta_trace_studio)  
@@ -74,8 +74,8 @@ Dart版とは異なり、DeltaTraceDatabase クラス内部の大半のメソッ
 
 ## サポート
 
-There is essentially no support at this time, but bugs will likely be fixed.  
-If you find any issues, please open an issue on GitHub.
+現時点では基本的にサポートはありませんが、バグは修正される可能性が高いです。  
+もし問題を見つけた場合はGitHubのissueを開いてください。
 
 ## バージョン管理について
 

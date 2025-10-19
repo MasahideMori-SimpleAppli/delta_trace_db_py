@@ -259,6 +259,22 @@ class RawQueryBuilder(QueryBuilder):
                    must_affect_at_least_one=must_affect_at_least_one,
                    cause=cause)
 
+    def set_offset(self, new_offset: Optional[int]):
+        self.offset = new_offset
+        return self
+
+    def set_start_after(self, new_start_after: Optional[Dict[str, Any]]):
+        self.start_after = new_start_after
+        return self
+
+    def set_end_before(self, new_end_before: Optional[Dict[str, Any]]):
+        self.end_before = new_end_before
+        return self
+
+    def set_limit(self, new_limit: Optional[int]):
+        self.limit = new_limit
+        return self
+
     def build(self) -> Query:
         return Query(
             target=self.target,

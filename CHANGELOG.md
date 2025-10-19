@@ -1,3 +1,8 @@
+## 0.0.35
+
+* The required Python version has been changed to 3.12 or later. This change makes it easier to interoperate with Datetime data in frontends.
+* Added setOffset, setStartAfter, setEndBefore, setLimit method to QueryBuilder and RawQueryBuilder.
+
 ## 0.0.34.post1
 
 * Fixed a bug in the SingleSort object that caused sorting to fail when v_type was EnumValueType.datetime_.
