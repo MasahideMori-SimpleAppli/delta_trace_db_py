@@ -1,3 +1,7 @@
+## 0.0.35.post1
+
+* Added top-level exports, which allow classes to be imported from the top level of their package.
+
 ## 0.0.35
 
 * The required Python version has been changed to 3.12 or later. This change makes it easier to interoperate with Datetime data in frontends.
