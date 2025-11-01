@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "delta_trace_db"
-version = "0.0.35.post1"
+version = "0.0.35.post2"
 description = "The NoSQL in-memory database with class-based functionality and detailed operation history tracking."
 readme = "README.md"
 license = "Apache-2.0"
@@ -13,7 +13,7 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
-    "file-state-manager>=2.0.0"
+    "file-state-manager>=2.0.0.post3"
 ]
 
 [project.urls]

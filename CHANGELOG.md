@@ -1,3 +1,7 @@
+## 0.0.35.post2
+
+* Updates regarding version upgrades of libraries that this package depends on.
+
 ## 0.0.35.post1
 
 * Added top-level exports, which allow classes to be imported from the top level of their package.
