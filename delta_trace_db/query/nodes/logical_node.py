@@ -1,5 +1,4 @@
 # coding: utf-8
-# logical_node.py
 from typing import Any, Dict
 from delta_trace_db.query.nodes.enum_node_type import EnumNodeType
 from delta_trace_db.query.nodes.query_node import QueryNode

@@ -1,3 +1,10 @@
+## 0.0.36
+
+* Refactoring was performed.
+* The Actor class has had roles and permissions removed, replaced by the simpler collectionPermissions.
+* Fixed an issue where hash calculation for collectionPermissions was not done.
+* The hash calculation method for the Actor class has been changed to be similar to the method used in other language versions.
+
 ## 0.0.35.post2
 
 * Updates regarding version upgrades of libraries that this package depends on.

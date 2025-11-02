@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from file_state_manager.util_object_hash import UtilObjectHash
 
@@ -23,21 +23,17 @@ def deep_collection_equals(a: Any, b: Any) -> bool:
 
 class Actor:
     className = "Actor"
-    version = "3"
+    version = "5"
 
     def __init__(
             self,
             actor_type: EnumActorType,
             actor_id: str,
-            roles: List[str],
-            permissions: List[str],
             collection_permissions: Optional[Dict[str, Permission]] = None,
             context: Optional[Dict[str, Any]] = None,
     ):
         self.actor_type = actor_type
         self.actor_id = actor_id
-        self.roles = roles
-        self.permissions = permissions
         self.collection_permissions = collection_permissions
         self.context = context
 
@@ -59,8 +55,6 @@ class Actor:
         return cls(
             actor_type=EnumActorType[src["type"]],
             actor_id=src["id"],
-            roles=list(src.get("roles", [])),
-            permissions=list(src.get("permissions", [])),
             collection_permissions=collection_permissions,
             context=src.get("context"),
         )
@@ -81,8 +75,6 @@ class Actor:
             "version": self.version,
             "type": self.actor_type.name,
             "id": self.actor_id,
-            "roles": self.roles,
-            "permissions": self.permissions,
             "collectionPermissions": m_collection_permissions,
             "context": UtilCopy.jsonable_deep_copy(self.context),
         }
@@ -93,8 +85,6 @@ class Actor:
         return (
                 self.actor_type == other.actor_type
                 and self.actor_id == other.actor_id
-                and self.roles == other.roles  # 順序あり比較
-                and self.permissions == other.permissions  # 順序あり比較
                 and deep_collection_equals(
             self.collection_permissions, other.collection_permissions
         )
@@ -102,10 +92,15 @@ class Actor:
         )
 
     def __hash__(self) -> int:
+        cp_v = 0
+        if self.collection_permissions is not None:
+            cp_v = UtilObjectHash.calc_map(self.collection_permissions)
+        c_v = 0
+        if self.context is not None:
+            c_v = UtilObjectHash.calc_map(self.context)
         return hash((
             self.actor_type,
             self.actor_id,
-            UtilObjectHash.calc_list(self.roles),
-            UtilObjectHash.calc_list(self.permissions),
-            UtilObjectHash.calc_map(self.context),
+            cp_v,
+            c_v,
         ))

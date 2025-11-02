@@ -330,8 +330,6 @@ def test_save_and_load():
         add_data=users,
         cause=Cause(who=Actor(actor_type=EnumActorType.system,
                               actor_id="1",
-                              roles=["tester"],
-                              permissions=["users:write:all"],
                               collection_permissions={
                                   "users": Permission([EnumQueryType.add]),
                               },
