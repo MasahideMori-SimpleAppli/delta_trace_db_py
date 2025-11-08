@@ -112,8 +112,8 @@ class DeltaTraceDatabase(CloneableFile):
             listeners_buf = None
             named_listeners_buf = None
             if name in self._collections:
-                listeners_buf = getattr(self._collections[name], "listeners", None)
-                named_listeners_buf = getattr(self._collections[name], "named_listeners", None)
+                listeners_buf = self._collections[name].listeners
+                named_listeners_buf = self._collections[name].named_listeners
             self._collections[name] = col
             if listeners_buf is not None:
                 col.listeners = listeners_buf
@@ -319,7 +319,7 @@ class DeltaTraceDatabase(CloneableFile):
                 # commit: notify listeners
                 for key in buff.keys():
                     col = self.collection(key)
-                    need_callback = getattr(col, "run_notify_listeners_in_transaction", False)
+                    need_callback = col.run_notify_listeners_in_transaction
                     col.change_transaction_mode(False)
                     if need_callback:
                         col.notify_listeners()
