@@ -61,12 +61,7 @@ class Collection(CloneableFile):
         Parameters
         ----------
         src : Dict[str, Any]
-            A dictionary made with toDict of this class.。
-
-        Returns
-        -------
-        result : "Collection"
-            Return deserialized obj.
+            A dictionary made with toDict of this class.
         """
         instance = cls()
         instance._data = UtilCopy.jsonable_deep_copy(src.get("data", []))
@@ -137,7 +132,7 @@ class Collection(CloneableFile):
         ----------
         cb : Callable[[], None]
             The function to execute when the DB is changed.
-        name : str, optional
+        name : Optional[str]
             If you set a non-null value, a listener will be registered with that name.
             Setting a name is useful if you want to be more precise about registration and release.
         """
@@ -158,7 +153,7 @@ class Collection(CloneableFile):
         ----------
         cb : Callable[[], None]
             The function for which you want to cancel the notification.
-        name : str, optional
+        name : Optional[str]
             If you registered with a name when you added Listener, you must unregister with the same name.
         """
         if name is None:

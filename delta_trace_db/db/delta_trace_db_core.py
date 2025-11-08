@@ -1,6 +1,6 @@
 # coding: utf-8
 from threading import RLock
-from typing import Any, Dict, List, Callable, Optional
+from typing import Any, Dict, List, Callable, Optional, override
 
 from file_state_manager.cloneable_file import CloneableFile
 
@@ -23,18 +23,59 @@ class DeltaTraceDatabase(CloneableFile):
     version = "12"
 
     def __init__(self):
+        """
+        (en) It is an in-memory database that takes into consideration the
+        safety of various operations.
+        It was created with the assumption that in addition to humans,
+        AI will also be the main users.
+
+        (ja) 様々な操作の安全性を考慮したインメモリデータベースです。
+        人間以外で、AIも主な利用者であると想定して作成しています。
+        """
         super().__init__()
         self._collections: Dict[str, Collection] = {}
         self._lock = RLock()  # execute_query / execute_transaction_query 共通
 
     @classmethod
     def from_dict(cls, src: Dict[str, Any]) -> "DeltaTraceDatabase":
+        """
+        (en) Restore this object from the dictionary.
+        Note that src is used as is, not copied.
+
+        (ja) このオブジェクトを辞書から復元します。
+        srcはコピーされずにそのまま利用されることに注意してください。
+
+        Parameters
+        ----------
+        src : Dict[str, Any]
+            A dictionary made with toDict of this class.
+
+        Raises
+        ------
+        ValueError
+            Throws on ValueError if the src is invalid format.
+        """
         instance = cls()
         instance._collections = cls._parse_collections(src)
         return instance
 
     @staticmethod
     def _parse_collections(src: Dict[str, Any]) -> Dict[str, Collection]:
+        """
+        (en) Restoring database data from JSON.
+
+        (ja) データベースのJSONからの復元処理。
+
+        Parameters
+        ----------
+        src : Dict[str, Any]
+            A dictionary made with toDict of this class.
+
+        Raises
+        ------
+        ValueError
+            Throws on ValueError if the src is invalid format.
+        """
         cols = src.get("collections")
         if not isinstance(cols, dict):
             raise ValueError("Invalid format: 'collections' should be a dict")
@@ -46,6 +87,20 @@ class DeltaTraceDatabase(CloneableFile):
         return result
 
     def collection(self, name: str) -> Collection:
+        """
+        (en) If the specified collection exists, it will be retrieved.
+        If it does not exist, a new one will be created and retrieved.
+        Normally you should not call this directly, but rather operate via queries.
+
+        (ja) 指定のコレクションが存在すればそれを取得し、
+        存在しなければ新しく作成して取得します。
+        通常は直接これを呼び出さず、クエリ経由で操作してください。
+
+        Parameters
+        ----------
+        name : str
+            The collection name.
+        """
         with self._lock:
             if name in self._collections:
                 return self._collections[name]
@@ -61,7 +116,10 @@ class DeltaTraceDatabase(CloneableFile):
         (ja) 指定のコレクションを検索します。
         存在すれば返し、存在しなければ None を返します。
 
-        * name : The collection name.
+        Parameters
+        ----------
+        name : str
+            The collection name.
         """
         with self._lock:
             return self._collections.get(name)
@@ -74,17 +132,63 @@ class DeltaTraceDatabase(CloneableFile):
         (ja) 指定のコレクションを削除します。
         指定の名前のコレクションが存在しなかった場合は何もしません。
 
-        * name : The collection name.
+        Parameters
+        ----------
+        name : str
+            The collection name.
+
+        Raises
+        ------
+        ValueError
+            例外が発生する条件があれば説明。
         """
         with self._lock:
             self._collections.pop(name, None)
 
     def collection_to_dict(self, name: str) -> Optional[Dict[str, Any]]:
+        """
+        (en) Saves individual collections as dictionaries.
+        For example, you can use this if you want to store a specific collection
+        in an encrypted format.
+        If you specify a collection that does not exist, null is returned.
+
+        (ja) 個別のコレクションを辞書として保存します。
+        特定のコレクション単位で暗号化して保存したいような場合に利用できます。
+        存在しないコレクションを指定した場合はnullが返されます。
+
+        Parameters
+        ----------
+        name : str
+            The collection name.
+        """
         with self._lock:
             collection = self._collections.get(name)
             return collection.to_dict() if collection is not None else None
 
     def collection_from_dict(self, name: str, src: Dict[str, Any]) -> Collection:
+        """
+        (en) Restores a specific collection from a dictionary, re-registers it,
+        and retrieves it.
+        If a collection with the same name already exists, it will be overwritten.
+        This is typically used to restore data saved with collectionToDict.
+
+
+        (ja) 特定のコレクションを辞書から復元して再登録し、取得します。
+        既存の同名のコレクションが既にある場合は上書きされます。
+        通常は、collectionToDictで保存したデータを復元する際に使用します。
+
+        Parameters
+        ----------
+        name : str
+            The collection name.
+        src : Dict[str, Any]
+            A dictionary made with collectionToDict of this class.
+
+        Raises
+        ------
+        ValueError
+            Throws on ValueError if the src is invalid format.
+        """
         with self._lock:
             col = Collection.from_dict(src)
             self._collections[name] = col
@@ -104,8 +208,17 @@ class DeltaTraceDatabase(CloneableFile):
         通常は、collection_to_dictで保存したデータを復元する際に使用します。
         このメソッドでは、指定されたコレクションの上書き時、既存のリスナが維持されます。
 
-        * name : The collection name.
-        * src : A dictionary made with collection_to_dict of this class.
+        Parameters
+        ----------
+        name : str
+            The collection name.
+        src : Dict[str, Any]
+            A dictionary made with collectionToDict of this class.
+
+        Raises
+        ------
+        ValueError
+            Throws on ValueError if the src is invalid format.
         """
         with self._lock:
             col = Collection.from_dict(src)
@@ -121,14 +234,23 @@ class DeltaTraceDatabase(CloneableFile):
                 col.named_listeners = named_listeners_buf
             return col
 
+    @override
     def clone(self) -> "DeltaTraceDatabase":
         with self._lock:
             return DeltaTraceDatabase.from_dict(self.to_dict())
 
     @property
     def raw(self) -> Dict[str, Collection]:
+        """
+        (en) Returns the stored contents as a reference.
+        Be careful as it is dangerous to edit it directly.
+
+        (ja) 保持している内容を参照として返します。
+        直接編集すると危険なため注意してください。
+        """
         return self._collections
 
+    @override
     def to_dict(self) -> Dict[str, Any]:
         with self._lock:
             return {
@@ -138,15 +260,90 @@ class DeltaTraceDatabase(CloneableFile):
             }
 
     def add_listener(self, target: str, cb: Callable[[], None], name: Optional[str] = None):
+        """
+        (en) This is a callback setting function that can be used when linking
+        the UI and DB.
+        The callback set here will be called when the contents of the [target]
+        collection are changed.
+        In other words, if you register it, you will be able to update the screen,
+        etc. when the contents of the DB change.
+        Normally you would register it in initState and then use removeListener
+        to remove it when disposing.
+        If you use this on the server side, it may be a good idea to set up a
+        function that writes the backup to storage.
+        Please note that notifications will not be restored even if the DB is
+        deserialized. You will need to set them every time.
+
+        (ja) UIとDBを連携する際に利用できる、コールバックの設定関数です。
+        ここで設定したコールバックは、[target]のコレクションの内容が変更されると呼び出されます。
+        つまり、登録しておくとDBの内容変更時に画面更新等ができるようになります。
+        通常はinitStateで登録し、dispose時にremoveListenerを使って解除してください。
+        これをサーバー側で使用する場合は、バックアップをストレージに書き込む関数などを設定
+        するのも良いかもしれません。
+        なお、通知に関してはDBをデシリアライズしても復元されません。毎回設定する必要があります。
+
+        Parameters
+        ----------
+        target : str
+            The target collection name.
+        cb : Callable[[], None]
+            The function to execute when the DB is changed.
+        name : Optional[str]
+            If you set a non-null value, a listener will be registered with that name.
+            Setting a name is useful if you want to be more precise about registration and release.
+        """
         with self._lock:
             self.collection(target).add_listener(cb, name=name)
 
     def remove_listener(self, target: str, cb: Callable[[], None], name: Optional[str] = None):
+        """
+        (en) This function is used to cancel the set callback.
+        Call it in the UI using dispose etc.
+
+        (ja) 設定したコールバックを解除するための関数です。
+        UIではdisposeなどで呼び出します。
+
+        Parameters
+        ----------
+        target : str
+            The target collection name.
+        cb : Callable[[], None]
+            The function for which you want to cancel the notification.
+        name : Optional[str]
+            If you registered with a name when you added Listener, you must unregister with the same name.
+        """
         with self._lock:
             self.collection(target).remove_listener(cb, name=name)
 
     def execute_query_object(self, query: Any,
                              collection_permissions: Optional[Dict[str, Permission]] = None) -> QueryExecutionResult:
+        """
+        (en) Executes a query of any type.
+        This function can execute a regular query, a transactional query,
+        or a Map of any of these.
+        Server side, verify that the call is legitimate
+        (e.g. by checking the JWT and/or the caller's user permissions)
+        before making this call.
+
+        (ja) 型を問わずにクエリを実行します。
+        この関数は、通常のクエリ、トランザクションクエリ、
+        またはそれらをMapにしたもののいずれでも実行できます。
+        サーバーサイドでは、この呼び出しの前に正規の呼び出しであるかどうかの
+        検証(JWTのチェックや呼び出し元ユーザーの権限のチェック)を行ってください。
+
+        Parameters
+        ----------
+        query : Any
+            Query, TransactionQuery, or Map\<String, dynamic\>.
+        collection_permissions: Optional[Dict[str, Permission]]
+            Collection level operation permissions for the executing user. This is an optional argument for the server,
+            the key is the target collection name. Use null on the frontend, if this is null then everything is allowed.
+
+        Raises
+        ------
+        ValueError
+            Throws on ValueError if the query is unsupported type.
+        """
         with self._lock:  # 排他制御
             if isinstance(query, Query):
                 return self.execute_query(query, collection_permissions=collection_permissions)
@@ -164,6 +361,24 @@ class DeltaTraceDatabase(CloneableFile):
                 raise ValueError("Unsupported query type")
 
     def execute_query(self, q: Query, collection_permissions: Optional[Dict[str, Permission]] = None) -> QueryResult:
+        """
+        (en) Execute the query.
+        Server side, verify that the call is legitimate
+        (e.g. by checking the JWT and/or the caller's user permissions)
+        before making this call.
+
+        (ja) クエリを実行します。
+        サーバーサイドでは、この呼び出しの前に正規の呼び出しであるかどうかの
+        検証(JWTのチェックや呼び出し元ユーザーの権限のチェック)を行ってください。
+
+        Parameters
+        ----------
+        q : Query
+            The query.
+        collection_permissions: Optional[Dict[str, Permission]]
+            Collection level operation permissions for the executing user. This is an optional argument for the server,
+            the key is the target collection name. Use null on the frontend, if this is null then everything is allowed.
+        """
         with self._lock:  # 単体クエリもここで排他
             # パーミッションのチェック
             if not UtilQuery.check_permissions(q=q, collection_permissions=collection_permissions):
@@ -283,6 +498,29 @@ class DeltaTraceDatabase(CloneableFile):
     def execute_transaction_query(self, q: TransactionQuery,
                                   collection_permissions: Optional[
                                       Dict[str, Permission]] = None) -> TransactionQueryResult:
+        """
+        (en) Execute the transaction query.
+        Server side, verify that the call is legitimate
+        (e.g. by checking the JWT and/or the caller's user permissions)
+        before making this call.
+        During a transaction, after all operations are completed successfully,
+        if there is a listener callback for each collection, it will be invoked.
+        If there is a failure, nothing will be done.
+
+        (ja) トランザクションクエリを実行します。
+        サーバーサイドでは、この呼び出しの前に正規の呼び出しであるかどうかの
+        検証(JWTのチェックや呼び出し元ユーザーの権限のチェック)を行ってください。
+        トランザクション時は、全ての処理が正常に完了後、各コレクションに
+        リスナーのコールバックがあれば起動し、失敗の場合はなにもしません。
+
+        Parameters
+        ----------
+        q : Query
+            The query.
+        collection_permissions: Optional[Dict[str, Permission]]
+            Collection level operation permissions for the executing user. This is an optional argument for the server,
+            the key is the target collection name. Use null on the frontend, if this is null then everything is allowed.
+        """
         with self._lock:  # トランザクション全体で排他
             # 許可されていないクエリが混ざっていないか調査し、混ざっていたら失敗にする。
             for i in q.queries:
@@ -332,6 +570,18 @@ class DeltaTraceDatabase(CloneableFile):
                               buff: dict[str, dict[str, Any]],
                               non_exist_targets: set[str],
                               ) -> TransactionQueryResult:
+        """
+        (en) Rollback db.
+
+        (ja) DBをロールバックします。
+
+        Parameters
+        ----------
+        buff: dict[str, dict[str, Any]]
+            The collection buffer that needs to be undone.
+        non_exist_targets: set[str]
+            A list of collections that did not exist before the operation.
+        """
         # DBの変更を元に戻す。
         for key in buff.keys():
             self.collection_from_dict_keep_listener(key, buff[key])

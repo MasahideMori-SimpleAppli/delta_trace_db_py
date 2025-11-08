@@ -8,15 +8,28 @@ class UtilCopy:
     @staticmethod
     def jsonable_deep_copy(value: Any, depth: int = 0) -> Any:
         """
-        JSON互換型のみを再帰的にディープコピーします。
-        非対応の型や再帰深度超過は ValueError を投げます。
+        (en) Only JSON serializable types will be deep copied.
+        Throws ArgumentError on unsupported input types.
+        Note that the return value requires an explicit type conversion.
+        Also, if you enter data with a depth of 100 or more levels,
+        an ValueError will be thrown.
 
-        Args:
-            value: コピー対象
-            depth: 内部用の再帰深度カウンタ（外部から設定不要）
+        (ja) JSONでシリアライズ可能な型のみをディープコピーします。
+        戻り値には明示的な型変換が必要であることに注意してください。
+        非対応の型を入力するとArgumentErrorをスローします。
+        また、深さ100階層以上のデータを入力した場合もArgumentErrorをスローします。
 
-        Returns:
-            コピーされたオブジェクト
+        Parameters
+        ----------
+        value : Any
+            The deep copy target.
+        depth : int, optional
+            This is an internal parameter to limit recursive calls. Do not set this when using from outside.
+
+        Raises
+        ------
+        ValueError
+            Non JSON serializable types or excessive recursion depth will raise a ValueError.
         """
         if depth > UtilCopy._max_depth:
             raise ValueError('Exceeded max allowed nesting depth')
