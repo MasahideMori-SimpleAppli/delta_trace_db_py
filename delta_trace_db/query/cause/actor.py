@@ -1,5 +1,6 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, override
 
+from file_state_manager import CloneableFile
 from file_state_manager.util_object_hash import UtilObjectHash
 
 from delta_trace_db.db.util_copy import UtilCopy
@@ -9,6 +10,18 @@ from delta_trace_db.query.cause.permission import Permission
 
 # 深いコレクション比較（Dart の DeepCollectionEquality 相当）
 def deep_collection_equals(a: Any, b: Any) -> bool:
+    """
+    (en) Deep collection comparison function (equivalent to Dart's DeepCollectionEquality)
+
+    (ja) 深いコレクション比較用関数（Dart の DeepCollectionEquality 相当）
+
+    Parameters
+    ----------
+    a: Any
+        Comparison object A.
+    b: Any
+        Comparison object B.
+    """
     if isinstance(a, dict) and isinstance(b, dict):
         if a.keys() != b.keys():
             return False
@@ -21,17 +34,31 @@ def deep_collection_equals(a: Any, b: Any) -> bool:
         return a == b
 
 
-class Actor:
+class Actor(CloneableFile):
     className = "Actor"
-    version = "5"
+    version = "5.post1"
 
-    def __init__(
-            self,
-            actor_type: EnumActorType,
-            actor_id: str,
-            collection_permissions: Optional[Dict[str, Permission]] = None,
-            context: Optional[Dict[str, Any]] = None,
-    ):
+    def __init__(self, actor_type: EnumActorType, actor_id: str,
+                 collection_permissions: Optional[Dict[str, Permission]] = None,
+                 context: Optional[Dict[str, Any]] = None):
+        """
+        (en) This class defines the information of the person who
+        requested the database operation.
+
+        (ja) データベースの操作をリクエストした者の情報を定義するクラスです。
+
+        Parameters
+        ----------
+        actor_type: EnumActorType
+            The actor type. Choose from HUMAN, AI, or SYSTEM.
+        actor_id: str
+            The serial id (user id) of the actor.
+        collection_permissions: Optional[Dict[str, Permission]]
+            Collection-level permissions that relate only to database operations. The key is the collection name.
+        context: Optional[Dict[str, Any]]
+            The other context.
+        """
+        super().__init__()
         self.actor_type = actor_type
         self.actor_id = actor_id
         self.collection_permissions = collection_permissions
@@ -59,9 +86,11 @@ class Actor:
             context=src.get("context"),
         )
 
+    @override
     def clone(self) -> "Actor":
         return Actor.from_dict(self.to_dict())
 
+    @override
     def to_dict(self) -> Dict[str, Any]:
         m_collection_permissions: Optional[Dict[str, Dict[str, Any]]] = None
         if self.collection_permissions is not None:

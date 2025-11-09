@@ -1,7 +1,13 @@
 # coding: utf-8
 from enum import Enum
 
+
 class EnumNodeType(Enum):
+    """
+    (en) An enum that defines the node type.
+
+    (ja) ノードタイプを定義したEnumです。
+    """
     # 論理演算ノード (構造的に条件を組み立てる)
     and_ = "and_"
     or_ = "or_"

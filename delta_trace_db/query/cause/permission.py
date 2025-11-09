@@ -1,5 +1,5 @@
 # coding: utf-8
-from typing import List, Dict, Any
+from typing import List, Dict, Any, override
 
 from file_state_manager.cloneable_file import CloneableFile
 from file_state_manager.util_object_hash import UtilObjectHash
@@ -12,7 +12,23 @@ class Permission(CloneableFile):
     version: str = "1"
 
     def __init__(self, allows: List[EnumQueryType]):
-        # allows が None の場合は不正
+        """
+        (en) This class deals with database permissions.
+
+        (ja) データベースのパーミッションに関するクラスです。
+
+        Parameters
+        ----------
+        allows: List[EnumQueryType]
+            Only calls of the specified type are allowed.
+            If you attempt to process a query of a type not specified here,
+            the QueryResult will return false.
+
+        Raises
+        ------
+        ValueError
+            Throws on ValueError if the allows is None.
+        """
         super().__init__()
         if allows is None:
             raise ValueError("allows cannot be None")
@@ -29,9 +45,11 @@ class Permission(CloneableFile):
             allows.append(enum_val)
         return cls(allows)
 
+    @override
     def clone(self) -> "Permission":
         return Permission.from_dict(self.to_dict())
 
+    @override
     def to_dict(self) -> Dict[str, Any]:
         m_allows: List[str] = [i.name for i in self.allows]
         return {

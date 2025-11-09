@@ -20,7 +20,7 @@ _logger = logging.getLogger(__name__)
 
 class DeltaTraceDatabase(CloneableFile):
     class_name = "DeltaTraceDatabase"
-    version = "12"
+    version = "14"
 
     def __init__(self):
         """

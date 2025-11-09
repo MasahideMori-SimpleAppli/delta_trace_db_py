@@ -5,25 +5,45 @@ from delta_trace_db.query.nodes.enum_node_type import EnumNodeType
 
 
 class QueryNode(ABC):
-    """Base class for query nodes.
-
-    (en) Returns True if the object matches the calculation.
-    (ja) 計算と一致するオブジェクトだった場合はTrueを返します。
-    """
 
     @abstractmethod
     def evaluate(self, data: Dict[str, Any]) -> bool:
-        """Evaluate the node against a data dictionary."""
+        """
+        (en) Returns true if the object matches the calculation.
+
+        (ja) 計算と一致するオブジェクトだった場合はtrueを返します。
+        """
         pass
 
     @abstractmethod
     def to_dict(self) -> Dict[str, Any]:
-        """Convert the object to a dictionary."""
+        """
+        (en) Convert the object to a dictionary.
+        The returned dictionary can only contain primitive types, null, lists
+        or maps with only primitive elements.
+        If you want to include other classes,
+        the target class should inherit from this class and chain calls toDict.
+
+        (ja) このオブジェクトを辞書に変換します。
+        戻り値の辞書にはプリミティブ型かプリミティブ型要素のみのリスト
+        またはマップ等、そしてnullのみを含められます。
+        それ以外のクラスを含めたい場合、対象のクラスもこのクラスを継承し、
+        toDictを連鎖的に呼び出すようにしてください。
+        """
         pass
 
     @classmethod
     def from_dict(cls, src: Dict[str, Any]) -> "QueryNode":
-        """Restore a QueryNode object from a dictionary."""
+        """
+        (en) Restore this object from the dictionary.
+
+        (ja) このオブジェクトを辞書から復元します。
+
+        Parameters
+        ----------
+        src: Dict[str, Any]
+            A dictionary made with to_dict of this class.
+        """
         # 遅延インポート
         from delta_trace_db.query.nodes.logical_node import AndNode, OrNode, NotNode
         from delta_trace_db.query.nodes.comparison_node import FieldEquals, FieldNotEquals, FieldGreaterThan, \

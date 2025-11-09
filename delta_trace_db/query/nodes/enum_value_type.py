@@ -2,6 +2,11 @@
 from enum import Enum
 
 class EnumValueType(Enum):
+    """
+    (en) The comparison type definition for the query node.
+
+    (ja) クエリノードの比較タイプの定義です。
+    """
     auto_ = "auto_"              # default
     datetime_ = "datetime_"
     int_ = "int_"
