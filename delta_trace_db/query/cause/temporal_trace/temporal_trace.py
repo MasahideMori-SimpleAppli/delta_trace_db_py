@@ -7,7 +7,7 @@ from delta_trace_db.query.cause.temporal_trace.timestamp_node import TimestampNo
 
 class TemporalTrace(CloneableFile):
     class_name = "TemporalTrace"
-    version = "1.post1"
+    version = "1"
 
     def __init__(self, nodes: Optional[List[TimestampNode]] = None):
         """

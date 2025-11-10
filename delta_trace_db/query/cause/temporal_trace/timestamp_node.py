@@ -30,7 +30,7 @@ def to_utc_iso(dt: datetime) -> str:
 
 class TimestampNode(CloneableFile):
     class_name = "TimestampNode"
-    version = "1.post1"
+    version = "1"
 
     def __init__(self, timestamp: datetime, location: str, context: Dict[str, Any] = None):
         """

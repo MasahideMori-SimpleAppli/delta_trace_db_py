@@ -4,7 +4,7 @@
 * Refactoring was performed.
 * Fixed an issue where the return type hints for initiated_at and finalized_at in TemporalTrace were incorrect.
 * Fixed an issue where the Actor class did not inherit CloneableFile.
-
+* Fixed an issue where the Query class did not inherit CloneableFile.
 
 ## 0.0.36
 

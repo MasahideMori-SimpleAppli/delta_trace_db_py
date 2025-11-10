@@ -36,7 +36,7 @@ def deep_collection_equals(a: Any, b: Any) -> bool:
 
 class Actor(CloneableFile):
     className = "Actor"
-    version = "5.post1"
+    version = "5"
 
     def __init__(self, actor_type: EnumActorType, actor_id: str,
                  collection_permissions: Optional[Dict[str, Permission]] = None,
