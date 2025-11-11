@@ -1,5 +1,5 @@
 # coding: utf-8
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, override
 
 from delta_trace_db.query.enum_query_type import EnumQueryType
 from delta_trace_db.query.query_builder import QueryBuilder
@@ -58,6 +58,40 @@ class RawQueryBuilder(QueryBuilder):
             must_affect_at_least_one: bool = True,
             serial_key: Optional[str] = None,
             cause: Optional[Cause] = None):
+        """
+        (en) Adds an item to the specified collection.
+        If the specified collection does not already exist,
+        it will be created automatically.
+
+        (ja) 指定されたコレクションに要素を追加します。
+        指定されたコレクションがまだ存在しない場合はコレクションが自動で作成されます。
+
+        Parameters
+        ----------
+        target: str
+            The collection name in DB.
+        raw_add_data: List[Dict[str, Any]]
+            Data specified when performing an add operation.
+        return_data: bool
+            If true, return the changed objs.
+            If serialKey is set, the object will be returned with
+            the serial number added.
+        must_affect_at_least_one: bool
+            If true, the operation will be marked as
+            failed if it affects 0 objects.
+            If the operation is treated as a failure, the isSuccess flag of the
+            returned QueryResult will be set to false.
+        serial_key: Optional[str]
+            If not null, the add query will assign a unique serial
+            number (integer value) to the specified key.
+            This value is unique per collection.
+            Note that only variables directly under the class can be specified as
+            keys, not nested fields.
+        cause: Optional[Cause]
+            Optional metadata for auditing or logging.
+            Useful in high-security environments or for autonomous AI programs
+            to record the reason or initiator of a query.
+        """
         return cls(target=target, type_=EnumQueryType.add, raw_add_data=raw_add_data,
                    return_data=return_data,
                    must_affect_at_least_one=must_affect_at_least_one,
@@ -244,6 +278,40 @@ class RawQueryBuilder(QueryBuilder):
                   serial_key: Optional[str] = None,
                   reset_serial: bool = False,
                   cause: Optional[Cause] = None):
+        """
+        (en) Clears the specified collection and then add data.
+
+        (ja) 指定されたコレクションをclearした後、dataをAddします。
+
+        Parameters
+        ----------
+        target: str
+            The collection name in DB.
+        raw_add_data: List[Dict[str, Any]]
+            Data specified when performing an add operation.
+        return_data: bool
+            If true, return the changed objs.
+            If serialKey is set, the object will be returned with
+            the serial number added.
+        must_affect_at_least_one: bool
+            If true, the operation will be marked as
+            failed if it affects 0 objects.
+            If the operation is treated as a failure, the isSuccess flag of the
+            returned QueryResult will be set to false.
+        serial_key: Optional[str]
+            If not null, the add query will assign a unique serial
+            number (integer value) to the specified key.
+            This value is unique per collection.
+            Note that only variables directly under the class can be specified as
+            keys, not nested fields.
+        reset_serial: bool
+            If true, resets the managed serial number to 0 on
+            a clear or clearAdd query.
+        cause: Optional[Cause]
+            Optional metadata for auditing or logging.
+            Useful in high-security environments or for autonomous AI programs
+            to record the reason or initiator of a query.
+        """
         return cls(target=target, type_=EnumQueryType.clearAdd, raw_add_data=raw_add_data,
                    return_data=return_data,
                    must_affect_at_least_one=must_affect_at_least_one,
@@ -259,22 +327,27 @@ class RawQueryBuilder(QueryBuilder):
                    must_affect_at_least_one=must_affect_at_least_one,
                    cause=cause)
 
+    @override
     def set_offset(self, new_offset: Optional[int]):
         self.offset = new_offset
         return self
 
+    @override
     def set_start_after(self, new_start_after: Optional[Dict[str, Any]]):
         self.start_after = new_start_after
         return self
 
+    @override
     def set_end_before(self, new_end_before: Optional[Dict[str, Any]]):
         self.end_before = new_end_before
         return self
 
+    @override
     def set_limit(self, new_limit: Optional[int]):
         self.limit = new_limit
         return self
 
+    @override
     def build(self) -> Query:
         return Query(
             target=self.target,
