@@ -1,5 +1,5 @@
 # coding: utf-8
-from typing import List, Dict, Any, Callable
+from typing import List, Dict, Any, Callable, Optional, override
 
 from delta_trace_db.db.util_copy import UtilCopy
 from delta_trace_db.query.enum_query_type import EnumQueryType
@@ -18,8 +18,63 @@ class QueryResult(QueryExecutionResult):
         db_length: int,
         update_count: int,
         hit_count: int,
-        error_message: str | None = None,
+        error_message: Optional[str] = None,
     ):
+        """
+        (en) This class stores the query results and additional information from
+        the database.
+
+        (ja) DBへのクエリ結果や付加情報を格納したクラスです。
+
+        Parameters
+        ----------
+        is_success: bool
+            A flag indicating whether the operation was successful.
+            This also changes depending on the value of the optional argument
+            mustAffectAtLeastOne when creating a query.
+            When mustAffectAtLeastOne is true,
+            if the number of operation targets is 0,
+            it will be treated as an error and the value will be false.
+            When false, the value will be true even if the number of updates is 0.
+            In other cases, if an exception occurs internally,
+            it will be treated as an error.
+        target: str
+            The query target collection name in DB.
+            This was introduced in version 5 of this class.
+            If the server is running an earlier version,
+            an empty string is substituted.
+        type_: EnumQueryType
+            The query type for this result.
+            The query type at the time of submission is entered as is.
+        result: List[Dict[str, Any]]
+            The operation result data.
+            Always a list of serialized map objects (JSON).
+            Its meaning depends on [type]:
+
+            - For "search": The list contains matched objects.
+
+            - For "add": The list contains the added objects with serial keys.
+
+            - For "update": The list contains updated objects.
+
+            - For "delete": The list contains deleted objects.
+
+            Note: For add/update/delete, the list is only populated if the
+            query option [return_data] is set to true.
+
+        db_length: int
+            DB side item length.
+            This is The total number of records in the collection.
+        update_count: int
+            The total number of records add, updated or deleted.
+            When issuing a removeCollection query,
+            if the target collection already exists, the result will be 1.
+            if a non-existent collection is specified the result will be 0.
+        hit_count: int
+            The total number of records searched.
+        error_message: Optional[str]
+            A message that is added only if an error occurs.
+        """
         super().__init__(is_success=is_success)
         self.target: str = target
         self.type: EnumQueryType = type_
@@ -27,7 +82,7 @@ class QueryResult(QueryExecutionResult):
         self.db_length: int = db_length
         self.update_count: int = update_count
         self.hit_count: int = hit_count
-        self.error_message: str | None = error_message
+        self.error_message: Optional[str] = error_message
 
     @classmethod
     def from_dict(cls, src: Dict[str, Any]) -> "QueryResult":
@@ -43,11 +98,25 @@ class QueryResult(QueryExecutionResult):
         )
 
     def convert(self, from_dict: Callable) -> List:
+        """
+        (en) The search results will be retrieved as an array of
+        the specified class.
+
+        (ja) 検索結果を指定クラスの配列で取得します。
+
+        Parameters
+        ----------
+        from_dict: Callable
+            Passes a function to restore an object from a dictionary.
+            If the target is a CloneableFile, this is equivalent to the from_dict method.
+        """
         return [from_dict(i) for i in self.result]
 
+    @override
     def clone(self) -> "QueryResult":
         return self.from_dict(self.to_dict())
 
+    @override
     def to_dict(self) -> Dict[str, Any]:
         return {
             "className": self.class_name,
