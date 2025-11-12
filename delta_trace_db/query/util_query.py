@@ -9,23 +9,26 @@ from delta_trace_db.query.transaction_query import TransactionQuery
 class UtilQuery:
     """
     (en) Utilities for query processing.
+
     (ja) クエリ処理用のユーティリティです。
     """
 
     @staticmethod
-    def convert_from_json(src: Dict[str, Any]) -> Any:
+    def convert_from_json(src: Dict[str, Any]) -> Query | TransactionQuery:
         """
         (en) Restores a Query or TransactionQuery class from a JSON dict.
+
         (ja) JSONのdictから、QueryまたはTransactionQueryクラスを復元します。
 
-        Args:
-            src (Dict[str, Any]): The dict of Query or TransactionQuery class.
+        Parameters
+        ----------
+        src: Dict[str, Any]
+            The dict of Query or TransactionQuery class.
 
-        Returns:
-            Query | TransactionQuery
-
-        Raises:
-            ValueError: If you pass an incorrect class.
+        Raises
+        ------
+        ValueError
+            Throws on ValueError if you pass an incorrect class.
         """
         try:
             if src.get("className") == "Query":
@@ -39,6 +42,19 @@ class UtilQuery:
 
     @staticmethod
     def check_permissions(q: Query, collection_permissions: Optional[Dict[str, Permission]]) -> bool:
+        """
+        (en) Restores a Query or TransactionQuery class from a JSON dict.
+
+        (ja) JSONのdictから、QueryまたはTransactionQueryクラスを復元します。
+
+        Parameters
+        ----------
+        q: Query
+            The query you want to look up.
+        collection_permissions: Optional[Dict[str, Permission]]
+            The permissions of the user performing this operation.
+            Use null on the frontend, if this is null then everything is allowed.
+        """
         if collection_permissions is None:
             return True
         if q.target not in collection_permissions:
