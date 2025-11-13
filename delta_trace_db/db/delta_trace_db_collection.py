@@ -182,7 +182,7 @@ class Collection(CloneableFile):
         else:
             self.run_notify_listeners_in_transaction = True
 
-    def _evaluate(self, record: Dict[str, Any], node: QueryNode) -> bool:
+    def _evaluate(self, item: Dict[str, Any], node: QueryNode) -> bool:
         """
         (en) The evaluation function for the query.
 
@@ -190,17 +190,17 @@ class Collection(CloneableFile):
 
         Parameters
         ----------
-        record : Dict[str, Any]
-            Records (objects) to compare.
+        item : Dict[str, Any]
+            Items (objects) to compare.
         node : QueryNode
             The node of the query to use for the comparison.
 
         Returns
         -------
         result : bool
-            If true, the query matches the object(record).
+            If true, the query matches the item.
         """
-        return node.evaluate(record)
+        return node.evaluate(item)
 
     def add_all(self, q: Query) -> QueryResult:
         """
@@ -596,7 +596,7 @@ class Collection(CloneableFile):
 
     def count(self, q: Query) -> QueryResult:
         """
-        (en) Returns the total number of records stored in the collection.
+        (en) Returns the total number of items stored in the collection.
 
         (ja) コレクションに保存されているデータの総数を返します。
 

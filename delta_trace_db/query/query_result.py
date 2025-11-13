@@ -64,14 +64,14 @@ class QueryResult(QueryExecutionResult):
 
         db_length: int
             DB side item length.
-            This is The total number of records in the collection.
+            This is The total number of items in the collection.
         update_count: int
-            The total number of records add, updated or deleted.
+            The total number of items add, updated or deleted.
             When issuing a removeCollection query,
             if the target collection already exists, the result will be 1.
             if a non-existent collection is specified the result will be 0.
         hit_count: int
-            The total number of records searched.
+            The total number of items searched.
         error_message: Optional[str]
             A message that is added only if an error occurs.
         """
