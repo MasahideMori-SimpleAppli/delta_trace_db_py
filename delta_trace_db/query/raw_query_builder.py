@@ -16,7 +16,7 @@ class RawQueryBuilder(QueryBuilder):
             type_: EnumQueryType,
             raw_add_data: Optional[List[Dict[str, Any]]] = None,
             override_data: Optional[Dict[str, Any]] = None,
-            raw_template: Optional[Dict[str, Any]] = None,
+            template: Optional[Dict[str, Any]] = None,
             query_node: Optional[QueryNode] = None,
             sort_obj: Optional[AbstractSort] = None,
             offset: Optional[int] = None,
@@ -50,7 +50,7 @@ class RawQueryBuilder(QueryBuilder):
             cause=cause
         )
         self.raw_add_data = raw_add_data
-        self.raw_template = raw_template
+        self.template = template
 
     @classmethod
     def add(cls, target: str, raw_add_data: List[Dict[str, Any]],
@@ -228,14 +228,14 @@ class RawQueryBuilder(QueryBuilder):
     def conform_to_template(
             cls,
             target: str,
-            raw_template: Optional[Dict[str, Any]] = None,
+            template: Optional[Dict[str, Any]] = None,
             must_affect_at_least_one: bool = True,
             cause: Optional[Cause] = None
     ):
         return cls(
             target=target,
             type_=EnumQueryType.conformToTemplate,
-            raw_template=raw_template,
+            template=template,
             must_affect_at_least_one=must_affect_at_least_one,
             cause=cause
         )
@@ -354,7 +354,7 @@ class RawQueryBuilder(QueryBuilder):
             type_=self.type,
             add_data=self.raw_add_data,
             override_data=self.override_data,
-            template=self.raw_template,
+            template=self.template,
             query_node=self.query_node,
             sort_obj=self.sort_obj,
             offset=self.offset,
