@@ -1,3 +1,7 @@
+## 0.0.38
+
+* Updated readme.
+
 ## 0.0.37
 
 * Added docs.
