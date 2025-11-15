@@ -7,10 +7,7 @@ Python implementation of DeltaTraceDB.
 Here's a simple example of server-side code:  
 [ServerSide Example](https://github.com/MasahideMori-SimpleAppli/delta_trace_db_py_server_example)  
 
-If you want to construct queries directly, please refer to the [Dart version](https://github.com/MasahideMori-SimpleAppli/delta_trace_db).  
-There are some differences, such as arguments and functions being in snake case,  
-and an underscore being added after the variable name if the namespace conflicts with a standard function,  
-but the usage is the same.
+For more information, see the [online documentation](https://masahidemori-simpleappli.github.io/delta_trace_db_docs/).
 
 I am also developing an open source editor for manually editing the DB contents:  
 [DeltaTraceStudio](https://github.com/MasahideMori-SimpleAppli/delta_trace_studio)  
@@ -33,37 +30,37 @@ Please note that speeds also depend on the amount of data, so if you have a lot 
 ```text
 tests/test_speed.py speed test for 100000 records
 start add
-end add: 342 ms
+end add: 339 ms
 start getAll (with object convert)
-end getAll: 663 ms
+end getAll: 659 ms
 returnsLength: 100000
 start save (with json string convert)
-end save: 469 ms
+end save: 467 ms
 start load (with json string convert)
-end load: 561 ms
+end load: 558 ms
 start search (with object convert)
-end search: 868 ms
+end search: 866 ms
 returnsLength: 100000
 start search paging, half limit pre search (with object convert)
-end search paging: 424 ms
+end search paging: 425 ms
 returnsLength: 50000
 start searchOne, the last index object search (with object convert)
-end searchOne: 39 ms
+end searchOne: 38 ms
 returnsLength: 1
 start update at half index and last index object
 end update: 90 ms
 start updateOne of half index object
 end updateOne: 16 ms
 start conformToTemplate
-end conformToTemplate: 81 ms
+end conformToTemplate: 82 ms
 start delete half object (with object convert)
-end delete: 628 ms
+end delete: 621 ms
 returnsLength: 50000
 start deleteOne for last object (with object convert)
 end deleteOne: 22 ms
 returnsLength: 1
 start add with serialKey
-end add with serialKey: 99 ms
+end add with serialKey: 98 ms
 addedCount:100000
 ```
 

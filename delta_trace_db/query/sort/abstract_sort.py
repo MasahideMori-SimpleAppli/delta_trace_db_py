@@ -25,7 +25,7 @@ class AbstractSort(ABC):
         """
         (en) Convert the object to a dictionary.
         The returned dictionary can only contain primitive types, null, lists
-        or maps with only primitive elements.
+        or dicts with only primitive elements.
         If you want to include other classes,
         the target class should inherit from this class and chain calls toDict.
 

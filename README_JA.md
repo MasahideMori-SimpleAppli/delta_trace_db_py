@@ -1,18 +1,16 @@
 # delta-trace-db
 
 日本語版の解説です。
-このパッケージは、DeltaTraceDBのPython版です。 
 
 ## 使い方
 
 サーバーサイドコードの簡単な例を以下に示します。  
-[サーバーサイドの例](https://github.com/MasahideMori-SimpleAppli/delta_trace_db_py_server_example)  
+[サーバーサイドの例](https://github.com/MasahideMori-SimpleAppli/delta_trace_db_py_server_example)
 
-直接クエリを組み立てたい場合などは、[Dart版](https://github.com/MasahideMori-SimpleAppli/delta_trace_db)を参照してください。  
-引数や関数がスネークケースになったり、標準関数と名前空間が競合する場合は変数名の後にアンダースコアが付加されるなど、いくつか違いはありますが、使い方は同じです。  
+より詳しくは、[オンラインドキュメント](https://masahidemori-simpleappli.github.io/delta_trace_db_docs/)を参照してください。
 
 また、DBの内容を手動で編集するためのエディタもオープンソースで開発中です。  
-[DeltaTraceStudio](https://github.com/MasahideMori-SimpleAppli/delta_trace_studio)  
+[DeltaTraceStudio](https://github.com/MasahideMori-SimpleAppli/delta_trace_studio)
 
 ## 速度
 
@@ -22,55 +20,55 @@ testフォルダ内のtest_speed.pyを使用して、実際の環境でテスト
 ただし、データ量に応じてRAM容量を消費するため、非常に大規模なデータベースが必要な場合は、一般的なデータベースの使用を検討してください。  
 参考までに、Ryzen 3600 CPUを搭載した少し古いPCで実行した速度テストの結果（tests/test_speed.py）を以下に示します。  
 テスト条件は十分に時間がかかるように選択していますが、実用上問題になることは少ないと思います。  
-なお、速度はデータ量にも依存するため、大きなデータが多い場合は遅くなります。  
+なお、速度はデータ量にも依存するため、大きなデータが多い場合は遅くなります。
 
 ```text
 tests/test_speed.py speed test for 100000 records
 start add
-end add: 342 ms
+end add: 339 ms
 start getAll (with object convert)
-end getAll: 663 ms
+end getAll: 659 ms
 returnsLength: 100000
 start save (with json string convert)
-end save: 469 ms
+end save: 467 ms
 start load (with json string convert)
-end load: 561 ms
+end load: 558 ms
 start search (with object convert)
-end search: 868 ms
+end search: 866 ms
 returnsLength: 100000
 start search paging, half limit pre search (with object convert)
-end search paging: 424 ms
+end search paging: 425 ms
 returnsLength: 50000
 start searchOne, the last index object search (with object convert)
-end searchOne: 39 ms
+end searchOne: 38 ms
 returnsLength: 1
 start update at half index and last index object
 end update: 90 ms
 start updateOne of half index object
 end updateOne: 16 ms
 start conformToTemplate
-end conformToTemplate: 81 ms
+end conformToTemplate: 82 ms
 start delete half object (with object convert)
-end delete: 628 ms
+end delete: 621 ms
 returnsLength: 50000
 start deleteOne for last object (with object convert)
 end deleteOne: 22 ms
 returnsLength: 1
 start add with serialKey
-end add with serialKey: 99 ms
+end add with serialKey: 98 ms
 addedCount:100000
 ```
 
 ## 今後の予定
 
-データベースの高速化は可能ですが、優先度は低いので、使い勝手の向上や周辺ツールの作成を優先することになると思います。  
+データベースの高速化は可能ですが、優先度は低いので、使い勝手の向上や周辺ツールの作成を優先することになると思います。
 
 ## 注意
 
 このパッケージは基本的にシングルスレッド操作を前提としています。  
 Dart版とは異なり、DeltaTraceDatabase クラス内部の大半のメソッドは RLock を取得するためマルチスレッドでの呼び出しが可能ですが、
 その他のクラスやユーティリティ関数はスレッドセーフではないため、並行して使用する場合は注意が必要です。  
-また、メモリを共有しない並列処理（プロセス間など）を行う場合は、Dart版同様にメッセージパッシング等の追加処理が必要となります。  
+また、メモリを共有しない並列処理（プロセス間など）を行う場合は、Dart版同様にメッセージパッシング等の追加処理が必要となります。
 
 ## サポート
 

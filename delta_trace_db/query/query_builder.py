@@ -498,7 +498,7 @@ class QueryBuilder:
             template will be added with the template value as the initial value.
             Fields that do not exist in the template will be deleted.
             Usually, you pass a dictionary created by converting CloneableFile to
-            Map (call toDict).
+            Dict (call toDict).
         must_affect_at_least_one: bool
             If true, the operation will be marked as
             failed if it affects 0 objects.

@@ -48,7 +48,7 @@ class QueryResult(QueryExecutionResult):
             The query type at the time of submission is entered as is.
         result: List[Dict[str, Any]]
             The operation result data.
-            Always a list of serialized map objects (JSON).
+            Always a list of serialized Dict objects (JSON).
             Its meaning depends on [type]:
 
             - For "search": The list contains matched objects.

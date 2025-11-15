@@ -320,21 +320,21 @@ class DeltaTraceDatabase(CloneableFile):
         """
         (en) Executes a query of any type.
         This function can execute a regular query, a transactional query,
-        or a Map of any of these.
+        or a Dict of any of these.
         Server side, verify that the call is legitimate
         (e.g. by checking the JWT and/or the caller's user permissions)
         before making this call.
 
         (ja) 型を問わずにクエリを実行します。
         この関数は、通常のクエリ、トランザクションクエリ、
-        またはそれらをMapにしたもののいずれでも実行できます。
+        またはそれらをDictにしたもののいずれでも実行できます。
         サーバーサイドでは、この呼び出しの前に正規の呼び出しであるかどうかの
         検証(JWTのチェックや呼び出し元ユーザーの権限のチェック)を行ってください。
 
         Parameters
         ----------
         query : Any
-            Query, TransactionQuery, or Map\<String, dynamic\>.
+            Query, TransactionQuery, or Dict.
         collection_permissions: Optional[Dict[str, Permission]]
             Collection level operation permissions for the executing user. This is an optional argument for the server,
             the key is the target collection name. Use null on the frontend, if this is null then everything is allowed.
