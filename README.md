@@ -1,9 +1,9 @@
 # delta-trace-db
 
 (en)Japanese ver
-is [here](https://github.com/MasahideMori-SimpleAppli/delta_trace_db/blob/main/README_JA.md).  
+is [here](https://github.com/MasahideMori-SimpleAppli/delta_trace_db_py/blob/main/README_JA.md).  
 (ja)
-この解説の日本語版は[ここ](https://github.com/MasahideMori-SimpleAppli/delta_trace_db/blob/main/README_JA.md)
+この解説の日本語版は[ここ](https://github.com/MasahideMori-SimpleAppli/delta_trace_db_py/blob/main/README_JA.md)
 にあります。
 
 ## Overview
