@@ -22,7 +22,6 @@ This allows you to build rich and highly detailed operation logs suitable for se
 ## Features
 
 - **Store and search classes directly** (your model classes define the DB structure)
-- Lightweight in-memory DB for Dart / Flutter
 - High-speed search performance even with ~100,000 records
 - Queries are classes, making it easy to preserve operation logs
 - There is a Dart version for the front end　　
