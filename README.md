@@ -1,4 +1,4 @@
-# delta_trace_db
+# delta-trace-db
 
 (en)Japanese ver
 is [here](https://github.com/MasahideMori-SimpleAppli/delta_trace_db/blob/main/README_JA.md).  
