@@ -2,26 +2,166 @@
 
 日本語版の解説です。
 
-## 使い方
+## 概要
+
+**DeltaTraceDB は、クラス構造をそのまま保存・検索できる軽量・高速のインメモリ NoSQL データベースです。**  
+NoSQLですが、ネストされた子クラスの値についても全文検索が行えます。
+
+さらに、DeltaTraceDB のクエリはクラスであり、  
+クエリ自体をシリアライズして保存することで任意の時点のDBを復元できる他、  
+**who / when / what / why / from** 等の操作情報を保持可能です。  
+これにより、セキュリティ監査や利用状況分析に利用できる「リッチな操作ログ」を作ることができます。
+
+---
+
+## 特徴
+- **クラスをそのまま保存・検索**（モデルクラス＝DB構造）
+- 約 10 万件レベルでも高速な検索性能
+- クエリ自体がクラスなので操作ログとして保存可能
+- フロントエンド用にはDart 版があります  
+  → https://pub.dev/packages/delta_trace_db
+- DB の内容を編集できる GUI ツールも開発中  
+  → https://github.com/MasahideMori-SimpleAppli/delta_trace_studio
+
+---
+
+## クイックスタート
 
 サーバーサイドコードの簡単な例を以下に示します。  
 [サーバーサイドの例](https://github.com/MasahideMori-SimpleAppli/delta_trace_db_py_server_example)
 
-より詳しくは、[オンラインドキュメント](https://masahidemori-simpleappli.github.io/delta_trace_db_docs/)を参照してください。
+また、簡単なサンプルは次の通りです。
 
-また、DBの内容を手動で編集するためのエディタもオープンソースで開発中です。  
-[DeltaTraceStudio](https://github.com/MasahideMori-SimpleAppli/delta_trace_studio)
+```python
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from typing import Dict, Any
+from file_state_manager import CloneableFile
+from delta_trace_db import DeltaTraceDatabase, QueryBuilder
 
-## 速度
 
-このパッケージはインメモリデータベースなので、基本的に高速です。  
-現在、高速化する仕組みはありませんが、プログラム内のforループとほぼ同じ動作をするため、10万件程度であれば通常は問題ありません。  
-testフォルダ内のtest_speed.pyを使用して、実際の環境でテストすることをお勧めします。  
-ただし、データ量に応じてRAM容量を消費するため、非常に大規模なデータベースが必要な場合は、一般的なデータベースの使用を検討してください。  
-参考までに、Ryzen 3600 CPUを搭載した少し古いPCで実行した速度テストの結果（tests/test_speed.py）を以下に示します。  
-テスト条件は十分に時間がかかるように選択していますが、実用上問題になることは少ないと思います。  
-なお、速度はデータ量にも依存するため、大きなデータが多い場合は遅くなります。
+@dataclass
+class User(CloneableFile):
+    id: int
+    name: str
+    age: int
+    created_at: datetime
+    updated_at: datetime
+    nested_obj: dict
 
+    @classmethod
+    def from_dict(cls, src: Dict[str, Any]) -> "User":
+        return User(
+            id=src["id"],
+            name=src["name"],
+            age=src["age"],
+            created_at=datetime.fromisoformat(src["createdAt"]).astimezone(timezone.utc),
+            updated_at=datetime.fromisoformat(src["updatedAt"]).astimezone(timezone.utc),
+            nested_obj=dict(src["nestedObj"]),
+        )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "id": self.id,
+            "name": self.name,
+            "age": self.age,
+            "createdAt": self.created_at.astimezone(timezone.utc).isoformat(),
+            "updatedAt": self.updated_at.astimezone(timezone.utc).isoformat(),
+            "nestedObj": dict(self.nested_obj),
+        }
+
+    def clone(self) -> "User":
+        return User.from_dict(self.to_dict())
+
+
+def main():
+    db = DeltaTraceDatabase()
+    now = datetime.now(timezone.utc)
+
+    users = [
+        User(
+            id=-1,
+            name="Taro",
+            age=30,
+            created_at=now,
+            updated_at=now,
+            nested_obj={"a": "a"},
+        ),
+        User(
+            id=-1,
+            name="Jiro",
+            age=25,
+            created_at=now,
+            updated_at=now,
+            nested_obj={"a": "b"},
+        ),
+    ]
+
+    # If you want the return value to be reflected immediately on the front end,
+    # set return_data = True to get data that properly reflects the serial key.
+    query = (
+        QueryBuilder.add(
+            target="users",
+            add_data=users,
+            serial_key="id",
+            return_data=True,
+        )
+        .build()
+    )
+
+    # In the Python version, no type specification is required (duck typing)
+    r = db.execute_query(query)
+
+    # If you want to check the return value, you can easily do so by using toDict, which serializes it.
+    print(r.to_dict())
+
+    # You can easily convert from the Result object back to the original class.
+    # The value of r.result is deserialized using the function specified by convert.
+    results = r.convert(User.from_dict)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+# DB の構造
+
+DeltaTraceDB では、各コレクションが「クラスのリスト」に相当します。  
+クラス設計そのままでデータが扱えるため、フロントエンド・バックエンド間の整合性がとりやすく、  
+「必要なクラスオブジェクトを取得する」という自然な操作に集中できます。
+
+```
+📦 Database (DeltaTraceDB)
+├── 🗂️ CollectionA (key: "collection_a")
+│   ├── 📄 Item (ClassA)
+│   │   ├── id: int
+│   │   ├── name: String
+│   │   └── timestamp: String
+│   └── ...
+├── 🗂️ CollectionB (key: "collection_b")
+│   ├── 📄 Item (ClassB)
+│   │   ├── uid: String
+│   │   └── data: Map<String, dynamic>
+└── ...
+```
+
+## 基本操作
+
+詳細な使用方法やクエリの記述などは、オンラインドキュメントをご覧ください。
+
+📘 [オンラインドキュメント](https://masahidemori-simpleappli.github.io/delta_trace_db_docs/)
+
+## パフォーマンス
+
+本パッケージはインメモリ DB のため基本的に高速です。  
+プログラムの for ループに近い性能で動作するため、10 万件規模では実用上ほぼ問題ありません。  
+
+テストコードは以下にあります。
+```
+tests/test_speed.py
+```
+
+また、以下は Ryzen 3600 の PC で実施した実際の結果です。
 ```text
 tests/test_speed.py speed test for 100000 records
 start add
@@ -59,21 +199,20 @@ end add with serialKey: 98 ms
 addedCount:100000
 ```
 
-## 今後の予定
+## 今後の予定について
 
-データベースの高速化は可能ですが、優先度は低いので、使い勝手の向上や周辺ツールの作成を優先することになると思います。
+高速化は可能なものの優先度は低めで、  
+使い勝手の向上や周辺ツールの開発 が主な改良対象になる予定です。
 
-## 注意
+## 注意事項
 
-このパッケージは基本的にシングルスレッド操作を前提としています。  
-Dart版とは異なり、DeltaTraceDatabase クラス内部の大半のメソッドは RLock を取得するためマルチスレッドでの呼び出しが可能ですが、
-その他のクラスやユーティリティ関数はスレッドセーフではないため、並行して使用する場合は注意が必要です。  
-また、メモリを共有しない並列処理（プロセス間など）を行う場合は、Dart版同様にメッセージパッシング等の追加処理が必要となります。
+本パッケージは **シングルスレッド前提** で設計されています。  
+メモリを共有しない並列処理では、メッセージパッシングなどの追加処理が必要なことに注意してください。
 
 ## サポート
 
-現時点では基本的にサポートはありませんが、バグは修正される可能性が高いです。  
-もし問題を見つけた場合はGitHubのissueを開いてください。
+公式サポートはありませんが、バグは積極的に修正される可能性があります。  
+問題を見つけた場合は GitHub Issue へお願いします。
 
 ## バージョン管理について
 

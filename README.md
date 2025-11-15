@@ -1,31 +1,177 @@
-# delta-trace-db
+# delta_trace_db
 
-Python implementation of DeltaTraceDB.
+(en)Japanese ver
+is [here](https://github.com/MasahideMori-SimpleAppli/delta_trace_db/blob/main/README_JA.md).  
+(ja)
+この解説の日本語版は[ここ](https://github.com/MasahideMori-SimpleAppli/delta_trace_db/blob/main/README_JA.md)
+にあります。
 
-## Usage
+## Overview
+
+**DeltaTraceDB is a lightweight and high-performance in-memory NoSQL database 
+that stores and searches class structures as-is.**  
+Although it is NoSQL, it also supports full-text search across nested child objects.
+
+Queries in DeltaTraceDB are also represented as classes.  
+By serializing and storing these query objects, you can not only restore the database to any past state,  
+but also keep operation metadata such as **who / when / what / why / from**.  
+This allows you to build rich and highly detailed operation logs suitable for security audits and usage analysis.
+
+---
+
+## Features
+
+- **Store and search classes directly** (your model classes define the DB structure)
+- Lightweight in-memory DB for Dart / Flutter
+- High-speed search performance even with ~100,000 records
+- Queries are classes, making it easy to preserve operation logs
+- There is a Dart version for the front end　　
+  → https://pub.dev/packages/delta_trace_db
+- GUI editor for DB content is under development  
+  → https://github.com/MasahideMori-SimpleAppli/delta_trace_studio
+
+---
+
+## Quickstart
 
 Here's a simple example of server-side code:  
 [ServerSide Example](https://github.com/MasahideMori-SimpleAppli/delta_trace_db_py_server_example)  
 
-For more information, see the [online documentation](https://masahidemori-simpleappli.github.io/delta_trace_db_docs/).
+And here's a simple example:
 
-I am also developing an open source editor for manually editing the DB contents:  
-[DeltaTraceStudio](https://github.com/MasahideMori-SimpleAppli/delta_trace_studio)  
+```python
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from typing import Dict, Any
+from file_state_manager import CloneableFile
+from delta_trace_db import DeltaTraceDatabase, QueryBuilder
 
-## Speed
 
-This package is an in-memory database, so it is generally fast.  
-Currently, there is no mechanism to speed it up, but it works almost the same as a for loop in a program,  
-so there is usually no problem with around 100,000 records.  
-I recommend that you test it in an actual environment using test_speed.py in the test folder.  
-However, since it consumes RAM capacity according to the amount of data,  
-if you need an extremely large database, consider using a general database.  
-For reference, below are the results of a speed test (tests/test_speed.py) run on a slightly  
-older PC equipped with a Ryzen 3600 CPU.  
-The test conditions were chosen to take a sufficiently long time, but I think it will rarely
-cause   
-any problems in practical use.
-Please note that speeds also depend on the amount of data, so if you have a lot of large data, it will be slower.
+@dataclass
+class User(CloneableFile):
+    id: int
+    name: str
+    age: int
+    created_at: datetime
+    updated_at: datetime
+    nested_obj: dict
+
+    @classmethod
+    def from_dict(cls, src: Dict[str, Any]) -> "User":
+        return User(
+            id=src["id"],
+            name=src["name"],
+            age=src["age"],
+            created_at=datetime.fromisoformat(src["createdAt"]).astimezone(timezone.utc),
+            updated_at=datetime.fromisoformat(src["updatedAt"]).astimezone(timezone.utc),
+            nested_obj=dict(src["nestedObj"]),
+        )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "id": self.id,
+            "name": self.name,
+            "age": self.age,
+            "createdAt": self.created_at.astimezone(timezone.utc).isoformat(),
+            "updatedAt": self.updated_at.astimezone(timezone.utc).isoformat(),
+            "nestedObj": dict(self.nested_obj),
+        }
+
+    def clone(self) -> "User":
+        return User.from_dict(self.to_dict())
+
+
+def main():
+    db = DeltaTraceDatabase()
+    now = datetime.now(timezone.utc)
+
+    users = [
+        User(
+            id=-1,
+            name="Taro",
+            age=30,
+            created_at=now,
+            updated_at=now,
+            nested_obj={"a": "a"},
+        ),
+        User(
+            id=-1,
+            name="Jiro",
+            age=25,
+            created_at=now,
+            updated_at=now,
+            nested_obj={"a": "b"},
+        ),
+    ]
+
+    # If you want the return value to be reflected immediately on the front end,
+    # set return_data = True to get data that properly reflects the serial key.
+    query = (
+        QueryBuilder.add(
+            target="users",
+            add_data=users,
+            serial_key="id",
+            return_data=True,
+        )
+        .build()
+    )
+
+    # In the Python version, no type specification is required (duck typing)
+    r = db.execute_query(query)
+
+    # If you want to check the return value, you can easily do so by using toDict, which serializes it.
+    print(r.to_dict())
+
+    # You can easily convert from the Result object back to the original class.
+    # The value of r.result is deserialized using the function specified by convert.
+    results = r.convert(User.from_dict)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+## DB structure
+
+In DeltaTraceDB, each collection corresponds to a **list of class instances**.  
+Since the data structure directly mirrors your class definitions,  
+it becomes easy to keep consistency between the frontend and backend while  
+focusing solely on retrieving the class objects you need.
+
+```
+📦 Database (DeltaTraceDB)
+├── 🗂️ CollectionA (key: "collection_a")
+│   ├── 📄 Item (ClassA)
+│   │   ├── id: int
+│   │   ├── name: String
+│   │   └── timestamp: String
+│   └── ...
+├── 🗂️ CollectionB (key: "collection_b")
+│   ├── 📄 Item (ClassB)
+│   │   ├── uid: String
+│   │   └── data: Map<String, dynamic>
+└── ...
+```
+
+## Basic Operations
+
+For detailed usage, including how to write queries, see the documentation:
+
+📘 [Online Documentation](https://masahidemori-simpleappli.github.io/delta_trace_db_docs/)
+
+## Performance
+
+DeltaTraceDB is fast due to its in-memory design.
+Although it has no dedicated optimization mechanisms at the moment,
+its performance is roughly equivalent to a simple for loop over the data.
+Around 100,000 records can typically be handled without issues.
+
+You can run performance tests using:
+```text
+tests/test_speed.py
+```
+
+Below is an example result from a Ryzen 3600 machine:
 
 ```text
 tests/test_speed.py speed test for 100000 records
@@ -66,23 +212,18 @@ addedCount:100000
 
 ## Future plans
 
-It is possible to speed up the database, but this is a low priority, so I think that improving
-usability and creating peripheral tools will take priority.
+Although further optimization is possible, performance improvements have lower priority.  
+The focus will instead be on improving usability and developing surrounding tools.
 
 ## Notes
 
-This package is primarily designed for single-threaded operation.  
-Unlike the Dart version, most methods within the DeltaTraceDatabase class acquire an RLock and can be called in
-multi-threaded mode, but other classes and utility functions are not thread-safe, 
-so care must be taken when using them in parallel.
-Additionally, for parallel processing that does not share memory (e.g., across processes), message passing or similar 
-mechanisms are required, just like in the Dart version.  
-
+This package is designed for single-threaded environments.  
+When using parallel processing without shared memory, additional mechanisms such as message passing are required.
 
 ## Support
 
-There is essentially no support at this time, but bugs will likely be fixed.  
-If you find any issues, please open an issue on GitHub.
+There is no official support, but bugs are likely to be fixed actively.  
+Please open an issue on GitHub if you find any problems.
 
 ## About version control
 
