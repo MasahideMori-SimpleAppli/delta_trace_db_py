@@ -24,7 +24,7 @@ This allows you to build rich and highly detailed operation logs suitable for se
 - **Store and search classes directly** (your model classes define the DB structure)
 - High-speed search performance even with ~100,000 records
 - Queries are classes, making it easy to preserve operation logs
-- There is a Dart version for the front end　　
+- There is a Dart version for the front end  
   → https://pub.dev/packages/delta_trace_db
 - GUI editor for DB content is under development  
   → https://github.com/MasahideMori-SimpleAppli/delta_trace_studio
