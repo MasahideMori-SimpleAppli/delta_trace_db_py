@@ -124,6 +124,8 @@ if __name__ == "__main__":
     main()
 ```
 
+---
+
 # DB の構造
 
 DeltaTraceDB では、各コレクションが「クラスのリスト」に相当します。  
@@ -145,11 +147,15 @@ DeltaTraceDB では、各コレクションが「クラスのリスト」に相�
 └── ...
 ```
 
+---
+
 ## 基本操作
 
 詳細な使用方法やクエリの記述などは、オンラインドキュメントをご覧ください。
 
 📘 [オンラインドキュメント](https://masahidemori-simpleappli.github.io/delta_trace_db_docs/)
+
+---
 
 ## パフォーマンス
 
@@ -199,20 +205,28 @@ end add with serialKey: 98 ms
 addedCount:100000
 ```
 
+---
+
 ## 今後の予定について
 
 高速化は可能なものの優先度は低めで、  
 使い勝手の向上や周辺ツールの開発 が主な改良対象になる予定です。
+
+---
 
 ## 注意事項
 
 本パッケージは **シングルスレッド前提** で設計されています。  
 メモリを共有しない並列処理では、メッセージパッシングなどの追加処理が必要なことに注意してください。
 
+---
+
 ## サポート
 
 公式サポートはありませんが、バグは積極的に修正される可能性があります。  
 問題を見つけた場合は GitHub Issue へお願いします。
+
+---
 
 ## バージョン管理について
 
@@ -226,6 +240,8 @@ However, versions less than 1.0.0 may change the file structure regardless of th
     - X.C.X
 - Minor changes and bug fixes.
     - X.X.C
+
+---
 
 ## ライセンス
 
@@ -244,6 +260,8 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+---
 
 ## 商標など
 
