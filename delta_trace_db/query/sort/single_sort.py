@@ -31,7 +31,7 @@ class SingleSort(AbstractSort):
             Specifies whether to reverse the sort result.
         v_type: EnumValueType
             Specifies the comparison type during calculation.
-            If you select anything other than auto_,
+            If you select anything other than ``auto_``,
             the value will be cast to that type before the comparison is performed.
             If an exception occurs, such as a conversion failure,
             an Exception is thrown.

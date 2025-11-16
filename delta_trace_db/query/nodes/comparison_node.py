@@ -22,10 +22,10 @@ class FieldEquals(QueryNode):
         value: Any
             The compare value.
             If DateTime is specified, it will be automatically converted to
-            Iso8601String and vType will be set to EnumValueType.datetime_.
+            Iso8601String and vType will be set to ``EnumValueType.datetime_``.
         v_type: EnumValueType
             Specifies the comparison type during calculation.
-            If you select anything other than auto_,
+            If you select anything other than ``auto_``,
             the value will be cast to that type before the comparison is performed.
             When an exception occurs, such as a conversion failure,
             the result is always False.
@@ -91,10 +91,10 @@ class FieldNotEquals(QueryNode):
         value: Any
             The compare value.
             If DateTime is specified, it will be automatically converted to
-            Iso8601String and vType will be set to EnumValueType.datetime_.
+            Iso8601String and vType will be set to ``EnumValueType.datetime_``.
         v_type: EnumValueType
             Specifies the comparison type during calculation.
-            If you select anything other than auto_,
+            If you select anything other than ``auto_``,
             the value will be cast to that type before the comparison is performed.
             When an exception occurs, such as a conversion failure,
             the result is always False.
@@ -164,10 +164,10 @@ class FieldGreaterThan(QueryNode):
         value: Any
             The compare value.
             If DateTime is specified, it will be automatically converted to
-            Iso8601String and vType will be set to EnumValueType.datetime_.
+            Iso8601String and vType will be set to ``EnumValueType.datetime_``.
         v_type: EnumValueType
             Specifies the comparison type during calculation.
-            If you select anything other than auto_,
+            If you select anything other than ``auto_``,
             the value will be cast to that type before the comparison is performed.
             When an exception occurs, such as a conversion failure,
             the result is always False.
@@ -239,10 +239,10 @@ class FieldLessThan(QueryNode):
         value: Any
             The compare value.
             If DateTime is specified, it will be automatically converted to
-            Iso8601String and vType will be set to EnumValueType.datetime_.
+            Iso8601String and vType will be set to ``EnumValueType.datetime_``.
         v_type: EnumValueType
             Specifies the comparison type during calculation.
-            If you select anything other than auto_,
+            If you select anything other than ``auto_``,
             the value will be cast to that type before the comparison is performed.
             When an exception occurs, such as a conversion failure,
             the result is always False.
@@ -314,10 +314,10 @@ class FieldGreaterThanOrEqual(QueryNode):
         value: Any
             The compare value.
             If DateTime is specified, it will be automatically converted to
-            Iso8601String and vType will be set to EnumValueType.datetime_.
+            Iso8601String and vType will be set to ``EnumValueType.datetime_``.
         v_type: EnumValueType
             Specifies the comparison type during calculation.
-            If you select anything other than auto_,
+            If you select anything other than ``auto_``,
             the value will be cast to that type before the comparison is performed.
             When an exception occurs, such as a conversion failure,
             the result is always False.
@@ -389,10 +389,10 @@ class FieldLessThanOrEqual(QueryNode):
         value: Any
             The compare value.
             If DateTime is specified, it will be automatically converted to
-            Iso8601String and vType will be set to EnumValueType.datetime_.
+            Iso8601String and vType will be set to ``EnumValueType.datetime_``.
         v_type: EnumValueType
             Specifies the comparison type during calculation.
-            If you select anything other than auto_,
+            If you select anything other than ``auto_``,
             the value will be cast to that type before the comparison is performed.
             When an exception occurs, such as a conversion failure,
             the result is always False.
