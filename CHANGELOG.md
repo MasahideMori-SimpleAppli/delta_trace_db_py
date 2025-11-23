@@ -1,3 +1,7 @@
+## 0.0.39
+
+* The following optional parameters have been added to the Actor class: name, email, created_at, updated_at, last_access, last_access_day, operation_in_day, and device_ids.
+
 ## 0.0.38.post1
 
 * Updated docs.
