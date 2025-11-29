@@ -8,7 +8,7 @@ from delta_trace_db.query.query_result import QueryResult
 
 class TransactionQueryResult(QueryExecutionResult):
     className: str = "TransactionQueryResult"
-    version: str = "2"
+    version: str = "3"
 
     def __init__(self, is_success: bool, results: List[QueryResult], error_message: Optional[str] = None):
         """
