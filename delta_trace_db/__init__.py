@@ -3,6 +3,9 @@ from delta_trace_db.db.delta_trace_db_collection import Collection
 from delta_trace_db.db.delta_trace_db_core import DeltaTraceDatabase
 from delta_trace_db.db.util_copy import UtilCopy
 
+# --- dsl ---
+from delta_trace_db.dsl.util_dsl_evaluator import UtilDslEvaluator
+
 # --- query.cause ---
 from delta_trace_db.query.cause.temporal_trace.temporal_trace import TemporalTrace
 from delta_trace_db.query.cause.temporal_trace.timestamp_node import TimestampNode
@@ -38,6 +41,7 @@ from delta_trace_db.query.sort.single_sort import SingleSort
 
 # --- query (main) ---
 from delta_trace_db.query.enum_query_type import EnumQueryType
+from delta_trace_db.query.merge_query_params import MergeQueryParams
 from delta_trace_db.query.query import Query
 from delta_trace_db.query.query_builder import QueryBuilder
 from delta_trace_db.query.query_execution_result import QueryExecutionResult
@@ -53,6 +57,8 @@ __all__ = [
     "Collection",
     "DeltaTraceDatabase",
     "UtilCopy",
+    # dsl
+    "UtilDslEvaluator",
     # query
     ## cause
     ### temporal_trace
@@ -78,6 +84,7 @@ __all__ = [
     "SingleSort",
     ## query main
     "EnumQueryType",
+    "MergeQueryParams",
     "Query",
     "QueryBuilder",
     "QueryExecutionResult",

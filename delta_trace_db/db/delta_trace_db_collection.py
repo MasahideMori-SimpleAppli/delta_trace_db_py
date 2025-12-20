@@ -13,7 +13,7 @@ _logger = logging.getLogger(__name__)
 
 class Collection(CloneableFile):
     class_name = "Collection"
-    version = "16"
+    version = "17"
 
     def __init__(self):
         """
@@ -30,6 +30,33 @@ class Collection(CloneableFile):
         self.named_listeners: Dict[str, Callable[[], None]] = {}
         self._is_transaction_mode: bool = False
         self.run_notify_listeners_in_transaction: bool = False
+
+    @classmethod
+    def from_data(cls, data: List[Dict[str, Any]], serial_num: int):
+        """
+        (en) Constructor for creating an object by adding data directly.
+
+        (ja) 直接データを追加してオブジェクトを生成するためのクラスメソッド。
+
+        Parameters
+        ----------
+        data: List[Dict[str, Any]]
+            The Collection items.
+        serial_num: int
+            The serial number to be managed, starting with 0.
+        """
+        obj = cls()
+        obj._data = data
+        obj._serial_num = serial_num
+        return obj
+
+    def get_serial_num(self) -> int:
+        """
+        (en) Gets the value of the currently managed serial number.
+
+        (ja) 現在管理中のシリアルナンバーの値を取得します。
+        """
+        return self._serial_num
 
     def change_transaction_mode(self, is_transaction_mode: bool):
         """

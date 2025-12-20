@@ -7,6 +7,7 @@ from delta_trace_db.query.query import Query
 from file_state_manager.cloneable_file import CloneableFile
 from delta_trace_db.query.nodes.query_node import QueryNode
 from delta_trace_db.query.sort.abstract_sort import AbstractSort
+from delta_trace_db.query.merge_query_params import MergeQueryParams
 
 
 class QueryBuilder:
@@ -28,6 +29,7 @@ class QueryBuilder:
                  must_affect_at_least_one: bool = True,
                  serial_key: Optional[str] = None,
                  reset_serial: bool = False,
+                 merge_query_params: Optional[MergeQueryParams] = None,
                  cause: Optional[Cause] = None):
         """
         (en) A builder class for easily constructing queries.
@@ -57,6 +59,7 @@ class QueryBuilder:
         self.must_affect_at_least_one = must_affect_at_least_one
         self.serial_key = serial_key
         self.reset_serial = reset_serial
+        self.merge_query_params = merge_query_params
         self.cause = cause
 
     @classmethod
@@ -65,7 +68,7 @@ class QueryBuilder:
             return_data: bool = False,
             must_affect_at_least_one: bool = True,
             serial_key: Optional[str] = None,
-            cause: Optional[Cause] = None):
+            cause: Optional[Cause] = None) -> "QueryBuilder":
         """
         (en) Adds an item to the specified collection.
         If the specified collection does not already exist,
@@ -116,7 +119,7 @@ class QueryBuilder:
                return_data: bool = False,
                sort_obj: Optional[AbstractSort] = None,
                must_affect_at_least_one: bool = True,
-               cause: Optional[Cause] = None):
+               cause: Optional[Cause] = None) -> "QueryBuilder":
         """
         (en) Overwrites the parameters of all objects in the specified collection
         that match the conditions.
@@ -174,7 +177,7 @@ class QueryBuilder:
                    override_data: Dict[str, Any],
                    return_data: bool = False,
                    must_affect_at_least_one: bool = True,
-                   cause: Optional[Cause] = None):
+                   cause: Optional[Cause] = None) -> "QueryBuilder":
         """
         (en) Overwrites the parameters of one object in the specified collection
         that matches the conditions. Parameters not specified for overwriting
@@ -225,7 +228,7 @@ class QueryBuilder:
                return_data: bool = False,
                sort_obj: Optional[AbstractSort] = None,
                must_affect_at_least_one: bool = True,
-               cause: Optional[Cause] = None):
+               cause: Optional[Cause] = None) -> "QueryBuilder":
         """
         (en) Deletes all objects in the specified collection that match
         the specified criteria.
@@ -272,7 +275,7 @@ class QueryBuilder:
                    query_node: QueryNode,
                    return_data: bool = False,
                    must_affect_at_least_one: bool = True,
-                   cause: Optional[Cause] = None):
+                   cause: Optional[Cause] = None) -> "QueryBuilder":
         """
         (en) Deletes only one object that matches the specified criteria from
         the specified collection.
@@ -315,7 +318,7 @@ class QueryBuilder:
                start_after: Optional[Dict[str, Any]] = None,
                end_before: Optional[Dict[str, Any]] = None,
                limit: Optional[int] = None,
-               cause: Optional[Cause] = None):
+               cause: Optional[Cause] = None) -> "QueryBuilder":
         """
         (en) Gets objects from the specified collection that match
         the specified criteria.
@@ -378,7 +381,7 @@ class QueryBuilder:
     @classmethod
     def search_one(cls, target: str,
                    query_node: QueryNode,
-                   cause: Optional[Cause] = None):
+                   cause: Optional[Cause] = None) -> "QueryBuilder":
         """
         (en) Gets objects from the specified collection that match
         the specified criteria.
@@ -413,7 +416,7 @@ class QueryBuilder:
                 start_after: Optional[Dict[str, Any]] = None,
                 end_before: Optional[Dict[str, Any]] = None,
                 limit: Optional[int] = None,
-                cause: Optional[Cause] = None):
+                cause: Optional[Cause] = None) -> "QueryBuilder":
         """
         (en) Gets all items in the specified collection.
         If a limit(limit, offset, startAfter, endBefore, limit) is set,
@@ -476,7 +479,7 @@ class QueryBuilder:
     def conform_to_template(cls, target: str,
                             template: Dict[str, Any],
                             must_affect_at_least_one: bool = True,
-                            cause: Optional[Cause] = None):
+                            cause: Optional[Cause] = None) -> "QueryBuilder":
         """
         (en) Formats the contents of the specified collection to match the
         specified template.
@@ -520,7 +523,7 @@ class QueryBuilder:
                      rename_after: str,
                      return_data: bool = False,
                      must_affect_at_least_one: bool = True,
-                     cause: Optional[Cause] = None):
+                     cause: Optional[Cause] = None) -> "QueryBuilder":
         """
         (en) Renames a specific field in the specified collection.
 
@@ -557,7 +560,7 @@ class QueryBuilder:
 
     @classmethod
     def count(cls, target: str,
-              cause: Optional[Cause] = None):
+              cause: Optional[Cause] = None) -> "QueryBuilder":
         """
         (en) Gets the number of elements in the specified collection.
 
@@ -579,7 +582,7 @@ class QueryBuilder:
     def clear(cls, target: str,
               must_affect_at_least_one: bool = True,
               reset_serial: bool = False,
-              cause: Optional[Cause] = None):
+              cause: Optional[Cause] = None) -> "QueryBuilder":
         """
         (en) This query empties the contents of the specified collection.
 
@@ -614,7 +617,7 @@ class QueryBuilder:
                   must_affect_at_least_one: bool = True,
                   serial_key: Optional[str] = None,
                   reset_serial: bool = False,
-                  cause: Optional[Cause] = None):
+                  cause: Optional[Cause] = None) -> "QueryBuilder":
         """
         (en) Clears the specified collection and then add data.
 
@@ -662,7 +665,7 @@ class QueryBuilder:
     @classmethod
     def remove_collection(cls, target: str,
                           must_affect_at_least_one: bool = True,
-                          cause: Optional[Cause] = None):
+                          cause: Optional[Cause] = None) -> "QueryBuilder":
         """
         (en) Deletes the specified collection.
         This query is special because it deletes the collection itself.
@@ -699,7 +702,58 @@ class QueryBuilder:
                    must_affect_at_least_one=must_affect_at_least_one,
                    cause=cause)
 
-    def set_offset(self, new_offset: Optional[int]):
+    @classmethod
+    def merge(cls, merge_query_params: MergeQueryParams, must_affect_at_least_one: bool = True,
+              cause: Optional[Cause] = None) -> "QueryBuilder":
+        """
+        (en)
+        Merges collections according to the specified template and creates
+        a new collection.
+
+        This query is special and cannot be included as part of a transaction
+        query. Also, any callbacks associated with the target collection will
+        not be called when it is executed.
+
+        This is a maintenance function for administrators who need to change
+        the database structure. Normally, you should design your database so
+        that it does not need to be called.
+
+        (ja)
+        指定されたテンプレートに沿ってコレクションをマージし、
+        新しいコレクションを作成します。
+
+        このクエリは特殊で、トランザクションクエリの一部として
+        含めることはできません。
+        また、実行時には対象のコレクションに紐付いたコールバックも
+        呼ばれません。
+
+        これは DB の構造変更が必要な管理者のための
+        メンテナンス機能であり、通常はこれを呼び出さないでも
+        問題ない設計にしてください。
+
+        Parameters
+        ----------
+        merge_query_params: MergeQueryParams
+            Parameter object specifically for merge queries.
+        must_affect_at_least_one: bool
+            If true, the operation will be marked as
+            failed if it affects 0 objects.
+            If the operation is treated as a failure, the isSuccess flag of the
+            returned QueryResult will be set to false.
+        cause: Optional[Cause]
+            Optional metadata for auditing or logging.
+            Useful in high-security environments or for autonomous AI programs
+            to record the reason or initiator of a query.
+        """
+        return cls(
+            target=merge_query_params.base,
+            type_=EnumQueryType.merge,
+            merge_query_params=merge_query_params,
+            must_affect_at_least_one=must_affect_at_least_one,
+            cause=cause,
+        )
+
+    def set_offset(self, new_offset: Optional[int]) -> "QueryBuilder":
         """
         (en) This method can be used if you want to change only the search position.
 
@@ -714,7 +768,7 @@ class QueryBuilder:
         self.offset = new_offset
         return self
 
-    def set_start_after(self, new_start_after: Optional[Dict[str, Any]]):
+    def set_start_after(self, new_start_after: Optional[Dict[str, Any]]) -> "QueryBuilder":
         """
         (en) This method can be used if you want to change only the search position.
 
@@ -733,7 +787,7 @@ class QueryBuilder:
         self.start_after = new_start_after
         return self
 
-    def set_end_before(self, new_end_before: Optional[Dict[str, Any]]):
+    def set_end_before(self, new_end_before: Optional[Dict[str, Any]]) -> "QueryBuilder":
         """
         (en) This method can be used if you want to change only the search position.
 
@@ -752,7 +806,7 @@ class QueryBuilder:
         self.end_before = new_end_before
         return self
 
-    def set_limit(self, new_limit: Optional[int]):
+    def set_limit(self, new_limit: Optional[int]) -> "QueryBuilder":
         """
         (en) This method can be used if you want to change only the limit.
 
@@ -800,5 +854,6 @@ class QueryBuilder:
             must_affect_at_least_one=self.must_affect_at_least_one,
             serial_key=self.serial_key,
             reset_serial=self.reset_serial,
+            merge_query_params=self.merge_query_params,
             cause=self.cause
         )

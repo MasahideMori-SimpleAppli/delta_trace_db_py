@@ -21,3 +21,4 @@ class EnumQueryType(Enum):
     clear = "clear"  # delete all items.
     clearAdd = "clearAdd"  # clear then add.
     removeCollection = "removeCollection" # A special query that is not allowed in a transaction.
+    merge = "merge"

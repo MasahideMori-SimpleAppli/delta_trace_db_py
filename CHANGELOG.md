@@ -1,3 +1,9 @@
+## 0.1.0
+
+* A new query type, Merge, has been added.
+* The priority of the must_affect_at_least_one error and other errors has been changed so that other errors take priority.
+* Added get_serial_num method to Collection class.
+
 ## 0.0.40
 
 * Updated version numbers for some classes to correspond to fixes in other language versions.

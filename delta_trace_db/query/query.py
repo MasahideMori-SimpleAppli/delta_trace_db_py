@@ -6,11 +6,12 @@ from delta_trace_db.query.nodes.query_node import QueryNode
 from delta_trace_db.query.sort.abstract_sort import AbstractSort
 from delta_trace_db.query.cause.cause import Cause
 from delta_trace_db.db.util_copy import UtilCopy
+from delta_trace_db.query.merge_query_params import MergeQueryParams
 
 
 class Query(CloneableFile):
     className: str = "Query"
-    version: str = "6"
+    version: str = "7"
 
     def __init__(self, target: str, type_: EnumQueryType, add_data: Optional[List[Dict[str, Any]]] = None,
                  override_data: Optional[Dict[str, Any]] = None, template: Optional[Dict[str, Any]] = None,
@@ -19,7 +20,7 @@ class Query(CloneableFile):
                  end_before: Optional[Dict[str, Any]] = None, rename_before: Optional[str] = None,
                  rename_after: Optional[str] = None, limit: Optional[int] = None, return_data: bool = False,
                  must_affect_at_least_one: bool = True, serial_key: Optional[str] = None, reset_serial: bool = False,
-                 cause: Optional[Cause] = None):
+                 merge_query_params: Optional[MergeQueryParams] = None, cause: Optional[Cause] = None):
         """
         (en) This is a query class for DB operations. It is usually built using
         QueryBuilder or RawQueryBuilder.
@@ -98,7 +99,7 @@ class Query(CloneableFile):
             limit number of objects before the specified object will be returned.
         return_data: bool
             If true, return the changed objs.
-            Not valid for clear, clearAdd and conformToTemplate.
+            Not valid for clear, clearAdd, conformToTemplate and merge.
         must_affect_at_least_one: bool
             If true, the operation will be marked as
             failed if it affects 0 objects.
@@ -113,6 +114,8 @@ class Query(CloneableFile):
         reset_serial: bool
             If true, resets the managed serial number to 0 on
             a clear or clearAdd query.
+        merge_query_params: Optional[MergeQueryParams]
+            Dedicated parameters when issuing a merge query.
         cause: Optional[Cause]
             You can add further parameters such as why this query was
             made and who made it.
@@ -139,10 +142,14 @@ class Query(CloneableFile):
         self.must_affect_at_least_one = must_affect_at_least_one
         self.serial_key = serial_key
         self.reset_serial = reset_serial
+        self.merge_query_params = merge_query_params
         self.cause = cause
 
     @classmethod
     def from_dict(cls, src: Dict[str, Any]) -> "Query":
+        mqp = None
+        if "mergeQueryParams" in src and src["mergeQueryParams"] is not None:
+            mqp = MergeQueryParams.from_dict(src["mergeQueryParams"])
         return cls(
             target=src["target"],
             type_=EnumQueryType[src["type"]],
@@ -165,6 +172,7 @@ class Query(CloneableFile):
             must_affect_at_least_one=src.get("mustAffectAtLeastOne", True),
             serial_key=src.get("serialKey", None),
             reset_serial=src.get("resetSerial", False),
+            merge_query_params=mqp,
             cause=Cause.from_dict(src["cause"]) if src.get("cause") else None,
         )
 
@@ -194,6 +202,11 @@ class Query(CloneableFile):
             "mustAffectAtLeastOne": self.must_affect_at_least_one,
             "serialKey": self.serial_key,
             "resetSerial": self.reset_serial,
+            "mergeQueryParams": (
+                self.merge_query_params.to_dict()
+                if self.merge_query_params is not None
+                else None
+            ),
             "cause": self.cause.to_dict() if self.cause else None,
         }
 

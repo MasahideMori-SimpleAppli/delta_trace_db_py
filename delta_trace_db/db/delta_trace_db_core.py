@@ -4,7 +4,9 @@ from typing import Any, Dict, List, Callable, Optional, override
 
 from file_state_manager.cloneable_file import CloneableFile
 
+from delta_trace_db.query.raw_query_builder import RawQueryBuilder
 from delta_trace_db.db.delta_trace_db_collection import Collection
+from delta_trace_db.dsl.util_dsl_evaluator import UtilDslEvaluator
 from delta_trace_db.query.cause.permission import Permission
 from delta_trace_db.query.enum_query_type import EnumQueryType
 from delta_trace_db.query.query import Query
@@ -20,7 +22,7 @@ _logger = logging.getLogger(__name__)
 
 class DeltaTraceDatabase(CloneableFile):
     class_name = "DeltaTraceDatabase"
-    version = "15"
+    version = "16"
 
     def __init__(self):
         """
@@ -380,21 +382,21 @@ class DeltaTraceDatabase(CloneableFile):
             the key is the target collection name. Use null on the frontend, if this is null then everything is allowed.
         """
         with self._lock:  # 単体クエリもここで排他
-            # パーミッションのチェック
-            if not UtilQuery.check_permissions(q=q, collection_permissions=collection_permissions):
-                return QueryResult(
-                    is_success=False,
-                    target=q.target,
-                    type_=q.type,
-                    result=[],
-                    db_length=-1,
-                    update_count=0,
-                    hit_count=0,
-                    error_message="Operation not permitted."
-                )
-            is_exist_col = q.target in self._collections
-            col = self.collection(q.target)
             try:
+                # パーミッションのチェック
+                if not UtilQuery.check_permissions(q=q, collection_permissions=collection_permissions):
+                    return QueryResult(
+                        is_success=False,
+                        target=q.target,
+                        type_=q.type,
+                        result=[],
+                        db_length=-1,
+                        update_count=0,
+                        hit_count=0,
+                        error_message="Operation not permitted."
+                    )
+                is_exist_col = q.target in self._collections
+                col = self.collection(q.target)
                 match q.type:
                     case EnumQueryType.add:
                         r = col.add_all(q)
@@ -444,6 +446,8 @@ class DeltaTraceDatabase(CloneableFile):
                                 hit_count=0,
                                 error_message=None)
                         self.remove_collection(name=q.target)
+                    case EnumQueryType.merge:
+                        r = self._execute_merge_query(q=q)
                 # must_affect_at_least_oneの判定。
                 if q.type in (
                         EnumQueryType.add,
@@ -455,9 +459,10 @@ class DeltaTraceDatabase(CloneableFile):
                         EnumQueryType.renameField,
                         EnumQueryType.clear,
                         EnumQueryType.clearAdd,
-                        EnumQueryType.removeCollection
+                        EnumQueryType.removeCollection,
+                        EnumQueryType.merge
                 ):
-                    if q.must_affect_at_least_one and r.update_count == 0:
+                    if q.must_affect_at_least_one and r.update_count == 0 and r.is_success:
                         return QueryResult(
                             is_success=False,
                             target=q.target,
@@ -477,9 +482,9 @@ class DeltaTraceDatabase(CloneableFile):
                     target=q.target,
                     type_=q.type,
                     result=[],
-                    db_length=len(col.raw),
-                    update_count=-1,
-                    hit_count=-1,
+                    db_length=-1,
+                    update_count=0,
+                    hit_count=0,
                     error_message="execute_query ArgumentError"
                 )
             except Exception:
@@ -489,9 +494,9 @@ class DeltaTraceDatabase(CloneableFile):
                     target=q.target,
                     type_=q.type,
                     result=[],
-                    db_length=len(col.raw),
-                    update_count=-1,
-                    hit_count=-1,
+                    db_length=-1,
+                    update_count=0,
+                    hit_count=0,
                     error_message="execute_query Unexpected Error",
                 )
 
@@ -506,12 +511,16 @@ class DeltaTraceDatabase(CloneableFile):
         During a transaction, after all operations are completed successfully,
         if there is a listener callback for each collection, it will be invoked.
         If there is a failure, nothing will be done.
+        removeCollection and merge queries cannot be executed and will return an
+        error message if they are included in a transaction.
 
         (ja) トランザクションクエリを実行します。
         サーバーサイドでは、この呼び出しの前に正規の呼び出しであるかどうかの
         検証(JWTのチェックや呼び出し元ユーザーの権限のチェック)を行ってください。
         トランザクション時は、全ての処理が正常に完了後、各コレクションに
         リスナーのコールバックがあれば起動し、失敗の場合はなにもしません。
+        removeCollection及びmergeクエリは実行できず、
+        トランザクションに含まれる場合はエラーメッセージが返されます。
 
         Parameters
         ----------
@@ -524,7 +533,7 @@ class DeltaTraceDatabase(CloneableFile):
         with self._lock:  # トランザクション全体で排他
             # 許可されていないクエリが混ざっていないか調査し、混ざっていたら失敗にする。
             for i in q.queries:
-                if i.type == EnumQueryType.removeCollection:
+                if i.type == EnumQueryType.removeCollection or i.type == EnumQueryType.merge:
                     return TransactionQueryResult(is_success=False, results=[],
                                                   error_message="The query contains a type that is not permitted to be executed within a transaction.")
             # トランザクション付き処理を開始。
@@ -596,3 +605,169 @@ class DeltaTraceDatabase(CloneableFile):
             results=[],
             error_message="Transaction failed",
         )
+
+    def _execute_merge_query(self, q: Query) -> QueryResult:
+        """
+        (en) Run merge query.
+
+        (ja) マージクエリを実行します。
+
+        Parameters
+        ----------
+        q: Query
+            The query.
+        """
+        mqp = q.merge_query_params
+        if mqp is None:
+            return QueryResult(
+                is_success=False,
+                target=q.target,
+                type_=q.type,
+                result=[],
+                db_length=0,
+                update_count=0,
+                hit_count=0,
+                error_message="Argument error",
+            )
+        # 捜査対象コレクションの存在チェック
+        if self.find_collection(mqp.base) is None:
+            return QueryResult(
+                is_success=False,
+                target=q.target,
+                type_=q.type,
+                result=[],
+                db_length=0,
+                update_count=0,
+                hit_count=0,
+                error_message="Base collection does not exist.",
+            )
+        if mqp.source:
+            for col_name in mqp.source:
+                if self.find_collection(col_name) is None:
+                    return QueryResult(
+                        is_success=False,
+                        target=q.target,
+                        type_=q.type,
+                        result=[],
+                        db_length=0,
+                        update_count=0,
+                        hit_count=0,
+                        error_message="Source collection does not exist.",
+                    )
+        if mqp.serial_base is not None:
+            if self.find_collection(mqp.serial_base) is None:
+                return QueryResult(
+                    is_success=False,
+                    target=q.target,
+                    type_=q.type,
+                    result=[],
+                    db_length=0,
+                    update_count=0,
+                    hit_count=0,
+                    error_message="Serial base collection does not exist.",
+                )
+        # フラグの設定がおかしい場合はエラー
+        if len(mqp.source) != len(mqp.source_keys):
+            return QueryResult(
+                is_success=False,
+                target=q.target,
+                type_=q.type,
+                result=[],
+                db_length=0,
+                update_count=0,
+                hit_count=0,
+                error_message="The relationKey or relationKeys setting is invalid.",
+            )
+        # 既に出力先コレクションが存在するならエラー
+        if self.find_collection(mqp.output) is not None:
+            return QueryResult(
+                is_success=False,
+                target=q.target,
+                type_=q.type,
+                result=[],
+                db_length=0,
+                update_count=0,
+                hit_count=0,
+                error_message="The output collection already exists.",
+            )
+        try:
+            # DSLを解釈しながら新しいデータを生成
+            new_data = []
+            # マージ元データ取得
+            base_collection = self.find_collection(mqp.base).raw
+            source_collections = []
+            for source_name in mqp.source:
+                source_collections.append(
+                    self.find_collection(source_name).raw
+                )
+            # テンプレート構造に沿ってDSLを実行
+            for base_item in base_collection:
+                matched_sources = UtilDslEvaluator.resolve_source_items(
+                    base_item,
+                    source_collections,
+                    mqp.relation_key,
+                    mqp.source_keys,
+                )
+                new_row = UtilDslEvaluator.run(
+                    mqp.dsl_tmp,
+                    base_item,
+                    matched_sources,
+                )
+                new_data.append(new_row)
+            # 新しいコレクションとして追加
+            if mqp.serial_base is not None:
+                # シリアルナンバーを引き継ぐ
+                self._collections[mqp.output] = Collection.from_data(
+                    new_data,
+                    self.find_collection(mqp.serial_base).get_serial_num(),
+                )
+            else:
+                # serial_key 依存でシリアル追加
+                added_result = (
+                    self.collection(mqp.output)
+                    .add_all(
+                        RawQueryBuilder.add(
+                            target=mqp.output,
+                            raw_add_data=new_data,
+                            serial_key=mqp.serial_key,
+                        ).build()
+                    )
+                )
+                if not added_result.is_success:
+                    self.remove_collection(mqp.output)
+                    return QueryResult(
+                        is_success=False,
+                        target=q.target,
+                        type_=q.type,
+                        result=[],
+                        db_length=0,
+                        update_count=0,
+                        hit_count=0,
+                        error_message=added_result.error_message,
+                    )
+            result_col = self.find_collection(mqp.output)
+            length = result_col.length if result_col is not None else 0
+            return QueryResult(
+                is_success=True,
+                target=q.target,
+                type_=q.type,
+                result=[],
+                db_length=length,
+                update_count=length,
+                hit_count=0,
+            )
+        except Exception:
+            # 途中で失敗した場合はロールバック
+            if self.find_collection(mqp.output) is not None:
+                self.remove_collection(mqp.output)
+            _logger.error("execute_merge_query failed", exc_info=True)
+            return QueryResult(
+                is_success=False,
+                target=q.target,
+                type_=q.type,
+                result=[],
+                db_length=0,
+                update_count=0,
+                hit_count=0,
+                error_message="Merge failed",
+            )
