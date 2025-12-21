@@ -1,3 +1,7 @@
+## 0.1.1
+
+* Merge queries now allow nested values in relationKey and sourceKeys, and you can access them using dot notation.
+
 ## 0.1.0
 
 * A new query type, Merge, has been added.

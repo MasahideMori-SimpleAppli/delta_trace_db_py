@@ -204,11 +204,12 @@ class UtilDslEvaluator:
         result: list[dict] = []
         for i, collection in enumerate(source_collections):
             source_key = source_keys[i]
-            base_value = base_item.get(relation_key)
+            base_value = UtilField.get_nested_field_value(map_=base_item, path=relation_key)
             hit = None
             if base_value is not None:
                 for item in collection:
-                    if item.get(source_key) == base_value:
+                    source_value = UtilField.get_nested_field_value(map_=item, path=source_key)
+                    if source_value == base_value:
                         hit = item
                         break
             # 見つからなくても index を揃える
