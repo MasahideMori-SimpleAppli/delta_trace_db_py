@@ -140,7 +140,7 @@ def test_speed_crud():
     _ = r1_get.convert(User.from_dict)
     dt2 = datetime.now()
     print(f"end getAll: {(dt2 - dt1).total_seconds() * 1000:.0f} ms")
-    assert r1.is_success
+    assert r1_get.is_success
     print(f"returnsLength: {len(r1_get.result)}")
 
     # save
