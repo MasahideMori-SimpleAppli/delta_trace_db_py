@@ -1,3 +1,8 @@
+## 0.1.2
+
+* Improve hash comparison accuracy for `Actor` class by updating internal dependencies. 
+* Update hash calculation for `Permission` class (no significant behavior change).
+
 ## 0.1.1
 
 * Merge queries now allow nested values in relationKey and sourceKeys, and you can access them using dot notation.
