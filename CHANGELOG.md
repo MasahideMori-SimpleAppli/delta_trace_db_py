@@ -1,3 +1,7 @@
+## 0.1.3
+
+* Added information about corporate/enterprise support in the README.
+
 ## 0.1.2
 
 * Improve hash comparison accuracy for `Actor` class by updating internal dependencies. 

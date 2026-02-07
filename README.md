@@ -217,8 +217,15 @@ When using parallel processing without shared memory, additional mechanisms such
 
 ## Support
 
-There is no official support, but bugs are likely to be fixed actively.  
-Please open an issue on GitHub if you find any problems.
+This package is developed and maintained by me personally as an open-source project.  
+For bug reports and feature requests, please use GitHub Issues.
+
+If you need **paid support, consulting, or custom development**  
+(e.g. priority support, design advice, or implementation help),
+please contact my company:
+
+**SimpleAppli Inc.**  
+https://simpleappli.com/en/index_en.html
 
 ## About version control
 
